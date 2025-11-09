@@ -1,11 +1,12 @@
-# 🔺 Illuminati AI Copy Master – Minimal Stable App
+# 🔺 Illuminati AI Copy Master – Minimal Stable App with Settings
 # Author: DeAndre Jefferson
 
 import streamlit as st
 import os
+
 # --- Session Defaults ---
 if "engine_mode" not in st.session_state:
-    st.session_state["engine_mode"] = "Rule-based"  # or "OpenAI" / "Gemini"
+    st.session_state["engine_mode"] = "Rule-based"  # "Rule-based", "OpenAI", or "Gemini"
 
 if "openai_api_key" not in st.session_state:
     st.session_state["openai_api_key"] = ""
@@ -50,13 +51,13 @@ def page_dashboard():
     ---
     Use the navigation on the left to access:
     - **Dashboard** – overview  
-    - **Generate Copy** – (placeholder for copy engine)  
+    - **Generate Copy** – copy engine (coming soon)  
     - **Manual & Assets** – generate your Illuminati AI manual package  
-    - **System Checklist** – launch checklist (placeholder)  
-    - **Settings & Integrations** – integration notes (placeholder)  
+    - **System Checklist** – launch checklist  
+    - **Settings & Integrations** – configure engine mode & API keys  
     """)
 
-# --- Generate Copy Page (simple placeholder for now) ---
+# --- Generate Copy Page ---
 def page_generate_copy():
     st.header("🧠 Generate Copy")
 
@@ -77,7 +78,7 @@ def page_manual_assets():
     st.markdown("""
     Generate your **Illuminati AI Copy Master Manual** package:
 
-    - PDF manual (simple version for now)  
+    - PDF manual (lite version for now)  
     - Bundled ZIP package ready to download  
 
     Click the button below to generate the package.
@@ -107,12 +108,12 @@ def page_manual_assets():
         else:
             st.error("Package ZIP not found. Please rerun the generator.")
 
-# --- System Checklist Page (placeholder) ---
+# --- System Checklist Page ---
 def page_system_checklist():
     st.header("✅ System Checklist")
     st.info("This is a placeholder. Later you'll track funnel readiness and launch status here.")
 
-# --- Settings & Integrations Page (placeholder) ---
+# --- Settings & Integrations Page ---
 def page_settings():
     st.header("⚙️ Settings & Integrations")
 
@@ -165,3 +166,14 @@ def page_settings():
     For long-term, secure storage on Streamlit Cloud, use **Settings → Secrets** in the app dashboard.
     """)
 
+# --- Router ---
+if page == "Dashboard":
+    page_dashboard()
+elif page == "Generate Copy":
+    page_generate_copy()
+elif page == "Manual & Assets":
+    page_manual_assets()
+elif page == "System Checklist":
+    page_system_checklist()
+elif page == "Settings & Integrations":
+    page_settings()
