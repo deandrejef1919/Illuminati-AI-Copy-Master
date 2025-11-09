@@ -15,6 +15,12 @@ try:
 except ImportError:
     genai = None
 
+# --- Global UI Setup ---
+st.set_page_config(
+    page_title="Illuminati AI Copy Master",
+    page_icon="🔺",
+    layout="wide",
+)
 
 # --- Session Defaults ---
 if "engine_mode" not in st.session_state:
@@ -25,13 +31,6 @@ if "openai_api_key" not in st.session_state:
 
 if "gemini_api_key" not in st.session_state:
     st.session_state["gemini_api_key"] = ""
-
-# --- Global UI Setup ---
-st.set_page_config(
-    page_title="Illuminati AI Copy Master",
-    page_icon="🔺",
-    layout="wide",
-)
 
 # --- Sidebar Navigation ---
 st.sidebar.markdown("### 🔺 Illuminati AI Copy Master")
@@ -47,7 +46,8 @@ page = st.sidebar.radio(
         "Settings & Integrations",
     ]
 )
-# --- Helper: API keys from secrets or session ---
+
+# === Helper: API keys from secrets or session ===
 
 def get_openai_key():
     """Get OpenAI API key from Streamlit secrets or session."""
@@ -74,31 +74,17 @@ def generate_with_openai(prompt: str) -> str:
     if openai is None:
         raise RuntimeError("openai library is not installed.")
 
-    # Try new-style client; fall back to legacy if needed
-    try:
-        from openai import OpenAI
-        client = OpenAI(api_key=api_key)
-        resp = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are a world-class direct response copywriter."},
-                {"role": "user", "content": prompt},
-            ],
-            temperature=0.75,
-        )
-        return resp.choices[0].message.content.strip()
-    except Exception:
-        # Legacy style
-        openai.api_key = api_key
-        resp = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are a world-class direct response copywriter."},
-                {"role": "user", "content": prompt},
-            ],
-            temperature=0.75,
-        )
-        return resp["choices"][0]["message"]["content"].strip()
+    # Legacy-style call (compatible with most OpenAI Python versions)
+    openai.api_key = api_key
+    resp = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You are a world-class direct response copywriter."},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.75,
+    )
+    return resp["choices"][0]["message"]["content"].strip()
 
 
 def generate_with_gemini(prompt: str) -> str:
@@ -117,14 +103,14 @@ def generate_with_gemini(prompt: str) -> str:
 
 
 def generate_rule_based_copy(
-    product_name: str,
-    product_desc: str,
-    audience: str,
-    tone: str,
-    benefits_list: list[str],
-    cta: str,
-    awareness: str,
-    master_style: str,
+    product_name,
+    product_desc,
+    audience,
+    tone,
+    benefits_list,
+    cta,
+    awareness,
+    master_style,
 ):
     """Local, no-API rule-based generator for headlines and sales copy."""
 
@@ -168,7 +154,7 @@ def generate_rule_based_copy(
 
     # 2. How to + benefit
     headlines.append(
-        f"How to {base_benefit.lower()} with {product_name} (Even If You Feel You’ve Tried Everything)"
+        f"How to {base_benefit.lower()} with {product_name} (Even If You Feel You've Tried Everything)"
     )
 
     # 3. Curiosity / shortcut
@@ -184,7 +170,7 @@ def generate_rule_based_copy(
 
     # 5. Ultra-specific style
     headlines.append(
-        f"Use {product_name} to {base_benefit.lower()} in the Next 30 Days—Or Less"
+        f"Use {product_name} to {base_benefit.lower()} in the Next 30 Days... Or Less"
     )
 
     # 6. Optional extra hybrid
@@ -201,8 +187,8 @@ def generate_rule_based_copy(
 
 ATTENTION
 
-If you're {audience or 'struggling to convert attention into actual sales'}, there's a good chance the problem isn’t you…
-it’s the message you’re putting in front of your market.
+If you're {audience or 'struggling to convert attention into actual sales'}, there's a good chance the problem is not you...
+it's the message you're putting in front of your market.
 
 INTEREST
 
@@ -214,13 +200,13 @@ Instead of shouting into the void, you start speaking directly to what your pros
 
 DESIRE
 
-Here’s what that looks like when it’s working for you:
+Here is what that looks like when it is working for you:
 
 {bullets}
 
 ACTION
 
-If you’re serious about {base_benefit.lower()} and ready to use copy that finally matches the value you deliver, this is your move:
+If you're serious about {base_benefit.lower()} and ready to use copy that finally matches the value you deliver, this is your move:
 
 {cta.strip().rstrip('.')}.
 """
@@ -234,20 +220,24 @@ def page_dashboard():
     st.subheader("AI-Powered Direct Response Control Panel")
 
     st.markdown("""
-    Welcome to **Illuminati AI Copy Master** — your all-in-one hub for:
+Welcome to **Illuminati AI Copy Master** — your all-in-one hub for:
 
-    - Legendary copywriting frameworks (Ogilvy, Halbert, Kennedy & more)  
-    - AI-enhanced generation for headlines, sales letters, and funnels  
-    - Built-in manual & asset generator (PDF + ZIP)  
+- Legendary copywriting frameworks (Ogilvy, Halbert, Kennedy & more)  
+- AI-enhanced generation for headlines, sales letters, and funnels  
+- Built-in manual & asset generator (PDF + ZIP)  
 
-    ---
-    Use the navigation on the left to access:
-    - **Dashboard** – overview  
-    - **Generate Copy** – copy engine (coming soon)  
-    - **Manual & Assets** – generate your Illuminati AI manual package  
-    - **System Checklist** – launch checklist  
-    - **Settings & Integrations** – configure engine mode & API keys""")
-    def page_generate_copy():
+---
+Use the navigation on the left to access:
+- **Dashboard** – overview  
+- **Generate Copy** – rule-based + AI engines  
+- **Manual & Assets** – generate your Illuminati AI manual package  
+- **System Checklist** – launch checklist  
+- **Settings & Integrations** – configure engine mode & API keys  
+""")
+
+
+# --- Generate Copy Page ---
+def page_generate_copy():
     st.header("🧠 Generate Copy")
 
     # Default engine from session, but allow per-run override
@@ -471,34 +461,20 @@ SALES COPY:
 
         st.markdown("### 🤖 Gemini Output")
         st.markdown(ai_text)
+        return
 
-
-# --- Generate Copy Page ---
-def page_generate_copy():
-    st.header("🧠 Generate Copy")
-
-    st.markdown(f"**Current engine mode:** `{st.session_state.get('engine_mode', 'Rule-based')}`")
-
-    if st.session_state.get("engine_mode") == "OpenAI":
-        st.info("OpenAI mode selected. This page will later call OpenAI using your API key.")
-    elif st.session_state.get("engine_mode") == "Gemini":
-        st.info("Gemini mode selected. This page will later call Gemini using your API key.")
-    else:
-        st.info("Rule-based mode selected. This page will later use built-in, no-token templates.")
-
-    st.write("For now, this is a placeholder. Use **Manual & Assets** to generate your SOP manual package.")
 
 # --- Manual & Assets Page ---
 def page_manual_assets():
-    st.header("🔺 Illuminati AI Copy Master Manual & Assets")
+    st.header("📕 Illuminati AI Copy Master Manual & Assets")
     st.markdown("""
-    Generate your **Illuminati AI Copy Master Manual** package:
+Generate your **Illuminati AI Copy Master Manual** package:
 
-    - PDF manual (lite version for now)  
-    - Bundled ZIP package ready to download  
+- PDF manual (lite version for now)  
+- Bundled ZIP package ready to download  
 
-    Click the button below to generate the package.
-    """)
+Click the button below to generate the package.
+""")
 
     # Import the generator lazily so we see clear errors if something is wrong
     try:
@@ -524,10 +500,12 @@ def page_manual_assets():
         else:
             st.error("Package ZIP not found. Please rerun the generator.")
 
+
 # --- System Checklist Page ---
 def page_system_checklist():
     st.header("✅ System Checklist")
     st.info("This is a placeholder. Later you'll track funnel readiness and launch status here.")
+
 
 # --- Settings & Integrations Page ---
 def page_settings():
@@ -538,7 +516,7 @@ def page_settings():
         "Choose your default generation engine:",
         ["Rule-based", "OpenAI", "Gemini"],
         index=["Rule-based", "OpenAI", "Gemini"].index(st.session_state["engine_mode"]),
-        help="Rule-based uses built-in templates with no tokens. OpenAI/Gemini use external APIs."
+        help="Rule-based uses built-in templates with no tokens. OpenAI/Gemini use external APIs.",
     )
 
     st.session_state["engine_mode"] = engine_mode
@@ -551,7 +529,7 @@ def page_settings():
             "OpenAI API Key",
             type="password",
             value=st.session_state.get("openai_api_key", ""),
-            help="Used only in this session. For production, prefer Streamlit secrets."
+            help="Used only in this session. For production, prefer Streamlit secrets.",
         )
         st.session_state["openai_api_key"] = openai_key
 
@@ -560,7 +538,7 @@ def page_settings():
             "Gemini API Key",
             type="password",
             value=st.session_state.get("gemini_api_key", ""),
-            help="Used only in this session. For production, prefer Streamlit secrets."
+            help="Used only in this session. For production, prefer Streamlit secrets.",
         )
         st.session_state["gemini_api_key"] = gemini_key
 
@@ -578,9 +556,10 @@ def page_settings():
         st.write("**Gemini key set:**", "✅ Yes" if st.session_state["gemini_api_key"] else "❌ No")
 
     st.markdown("""
-    *Note:* Keys entered here are only kept in memory for this session.
-    For long-term, secure storage on Streamlit Cloud, use **Settings → Secrets** in the app dashboard.
-    """)
+*Note:* Keys entered here are only kept in memory for this session.
+For long-term, secure storage on Streamlit Cloud, use **Settings → Secrets** in the app dashboard.
+""")
+
 
 # --- Router ---
 if page == "Dashboard":
