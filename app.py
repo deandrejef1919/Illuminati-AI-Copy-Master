@@ -59,8 +59,17 @@ def page_dashboard():
 # --- Generate Copy Page (simple placeholder for now) ---
 def page_generate_copy():
     st.header("🧠 Generate Copy")
-    st.info("This section is a placeholder. The copy generation engine will be wired here later.")
-    st.write("For now, use the **Manual & Assets** section to generate your SOP manual package.")
+
+    st.markdown(f"**Current engine mode:** `{st.session_state.get('engine_mode', 'Rule-based')}`")
+
+    if st.session_state.get("engine_mode") == "OpenAI":
+        st.info("OpenAI mode selected. This page will later call OpenAI using your API key.")
+    elif st.session_state.get("engine_mode") == "Gemini":
+        st.info("Gemini mode selected. This page will later call Gemini using your API key.")
+    else:
+        st.info("Rule-based mode selected. This page will later use built-in, no-token templates.")
+
+    st.write("For now, this is a placeholder. Use **Manual & Assets** to generate your SOP manual package.")
 
 # --- Manual & Assets Page ---
 def page_manual_assets():
