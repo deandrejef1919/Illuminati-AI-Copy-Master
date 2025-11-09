@@ -19,7 +19,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# Custom CSS: red / black / gold theme with glow + footer
+# Custom CSS: red / black / gold theme with glow + footer + sidebar video styles
 APP_CSS = """
 <style>
 /* Global */
@@ -116,6 +116,41 @@ section[data-testid="stSidebar"] * {
     color: #f5f5f5 !important;
 }
 
+/* Sidebar inspiration video */
+.inspire-video-container {
+    text-align: center;
+    margin-top: 6px;
+}
+
+.inspire-video-frame {
+    border: 2px solid #d4af37;
+    border-radius: 10px;
+    box-shadow:
+        0 0 8px rgba(212, 175, 55, 0.7),
+        0 0 16px rgba(155, 17, 30, 0.5);
+    animation: glowpulse 4s ease-in-out infinite alternate;
+}
+
+.inspire-caption {
+    font-size: 0.7rem;
+    color: #cccccc;
+    margin-top: 3px;
+    line-height: 1.2;
+}
+
+@keyframes glowpulse {
+    from {
+        box-shadow:
+            0 0 6px rgba(212, 175, 55, 0.4),
+            0 0 12px rgba(155, 17, 30, 0.25);
+    }
+    to {
+        box-shadow:
+            0 0 12px rgba(212, 175, 55, 0.9),
+            0 0 22px rgba(155, 17, 30, 0.7);
+    }
+}
+
 /* Footer */
 .illuminati-footer {
     text-align: center;
@@ -166,6 +201,7 @@ NICHE_DEFAULTS: Dict[str, Dict[str, List[str]]] = {
             "a busy parent who wants natural ways to feel better without pills"
         ],
         "benefits": [
+            "cost-effective health independence (saves hundreds on pharmacy bills)",
             "relieve nagging symptoms without harsh drugs",
             "support your body’s natural healing process",
             "follow a simple daily routine you can actually stick to",
@@ -257,6 +293,9 @@ def normalize_audience(audience: str) -> str:
         return f"someone like {raw_aud}"
 
     # Fallback
+    if re.match(r"^\d", raw_aud):
+        return f"someone aged {raw_aud}"
+
     return f"someone who is {raw_aud}"
 
 
@@ -389,19 +428,16 @@ def analyze_copy_score(copy_text: str) -> Dict[str, float]:
     if n_words < 80:
         length_score = 20.0
     elif n_words < 200:
-        # ramp up
         length_score = 20 + (n_words - 80) / (200 - 80) * 40  # up to 60
     elif n_words <= 1500:
         length_score = 60 + min((n_words - 200) / (1500 - 200) * 30, 30)  # up to 90
     else:
-        # penalize too long
         over = min((n_words - 1500) / 1500, 1.0)
-        length_score = 90 - 30 * over  # down to 60
+        length_score = 90 - 30 * over  # down to ~60
 
     # 2) Emotional trigger score
     lower = text.lower()
     emo_hits = sum(1 for trig in EMOTIONAL_TRIGGERS if trig in lower)
-    # Cap at 15 hits
     emo_score = min(emo_hits / 15.0, 1.0) * 100
 
     # 3) Structure markers (AIDA / PAS / proof cues)
@@ -423,8 +459,6 @@ def analyze_copy_score(copy_text: str) -> Dict[str, float]:
     spec_raw = digits + percents + dollars + timeframes
     spec_score = min(spec_raw / 15.0, 1.0) * 100
 
-    # Weighted total
-    # Length 20%, emotion 25%, structure 20%, CTA 15%, specificity 20%
     total = (
         length_score * 0.20 +
         emo_score * 0.25 +
@@ -433,7 +467,6 @@ def analyze_copy_score(copy_text: str) -> Dict[str, float]:
         spec_score * 0.20
     )
 
-    # Normalize to 0–100
     total_score = max(1.0, min(100.0, total))
 
     return {
@@ -479,15 +512,12 @@ def generate_rule_based_copy(
     base_benefit_short = raw_base
     base_benefit_detail = ""
 
-    # If we have something like "Cost-effective health independence (saves hundreds on pharmacy bills)"
     if "(" in raw_base and ")" in raw_base:
         before_paren = raw_base.split("(", 1)[0].strip()
         inside_paren = raw_base.split("(", 1)[1].split(")", 1)[0].strip()
         if before_paren:
-            base_benefit_short = before_paren  # "Cost-effective health independence"
-        base_benefit_detail = inside_paren    # "saves hundreds on pharmacy bills"
-
-    base_benefit_full = raw_base
+            base_benefit_short = before_paren
+        base_benefit_detail = inside_paren
 
     audience_short = normalize_audience(audience)
 
@@ -500,7 +530,6 @@ def generate_rule_based_copy(
 
     # --- Audience first line cleanup for headlines ---
     first_aud_line = audience.splitlines()[0].strip() if audience else "your market"
-    # If the audience line looks like just an age range (e.g. '35-65+'), add "people aged"
     if re.match(r"^\d", first_aud_line):
         first_aud_line = f"people aged {first_aud_line}"
 
@@ -560,15 +589,12 @@ def generate_rule_based_copy(
         "Hybrid Mix": "Let’s mix hard-hitting direct response with what your market really cares about.",
     }.get(master_style, "Here’s the real story no one else is telling you.")
 
-    # --- Bullet list ---
     bullets = "\n".join([f"- {b}" for b in benefits_list])
 
-    # Optional extra sentence using the detail from parentheses, if available
     detail_sentence = ""
     if base_benefit_detail:
         detail_sentence = f" In plain English: it literally {base_benefit_detail}."
 
-    # --- Sales Copy Body ---
     sales_copy = textwrap.dedent(
         f"""
         [{master_style}-inspired angle – {style_flavor}]
@@ -621,134 +647,6 @@ def generate_rule_based_copy(
     return headlines, sales_copy
 
 
-    # --- Defaults from niche if missing ---
-    if not audience.strip():
-        niche_aud, _ = choose_niche_defaults(niche)
-        audience = niche_aud
-    if not benefits_list:
-        _, niche_benefits = choose_niche_defaults(niche)
-        benefits_list = niche_benefits
-
-    base_benefit = benefits_list[0]
-    audience_short = normalize_audience(audience)
-
-    style_flavor = MASTER_FLAVORS.get(
-        master_style, "direct-response style tuned for conversions"
-    )
-    awareness_angle = AWARENESS_ANGLE.get(
-        awareness, "meet them where they are and lead them step-by-step to a decision"
-    )
-
-    # --- Headlines ---
-    headlines: List[str] = []
-
-    first_aud_line = audience.splitlines()[0].strip() if audience else "your market"
-
-    headlines.append(
-        f"Finally: {product_name} That Helps You {base_benefit.capitalize()} Without The Struggle"
-    )
-    headlines.append(
-        f"How {first_aud_line.capitalize()} Can {base_benefit.capitalize()} with {product_name}"
-    )
-    headlines.append(
-        f'{product_name}: The "{base_benefit.capitalize()}" Shortcut You Can Start Using Today'
-    )
-    headlines.append(
-        f"Do You Make These Mistakes When Trying to {base_benefit.capitalize()}?"
-    )
-    headlines.append(
-        f"The Hidden Shortcut to {base_benefit.capitalize()} No One Told You About"
-    )
-
-    if len(benefits_list) > 1:
-        headlines.append(
-            f'Turn "{benefits_list[1].capitalize()}" Into Your Edge With {product_name}'
-        )
-
-    # --- CTA Tone by niche ---
-    cta_map = {
-        "Natural / Alternative Healing": "Because your body was never designed to be at war with itself.",
-        "Spirituality & Alternative Beliefs": "Because your soul has been asking for more — this is you answering.",
-        "Specific Health Problems": "Your future self will thank you for not ignoring this moment.",
-        "Vanity Niches": "The mirror doesn’t have to be your enemy anymore.",
-        "Relationships": "Love rarely fixes itself — it responds when you do.",
-        "Money & Business": "Your bank account will remember the choices you make today.",
-        "General Interest & Survival": "You don’t rise to the occasion; you fall to your level of preparation.",
-    }
-    cta_phrase = cta_map.get(
-        niche, "Take action now while you’re still thinking about it."
-    )
-
-    # --- Emotional intro by master ---
-    emotion_intro = {
-        "Gary Halbert": "Let’s cut through the noise for a second.",
-        "David Ogilvy": "Here’s a fact few advertisers ever admit.",
-        "Dan Kennedy": "I’ll be blunt — most people get this part completely wrong.",
-        "Joe Sugarman": "Let me tell you a quick story that changed everything.",
-        "Eugene Schwartz": "The key isn’t desire — it’s understanding where that desire already lives.",
-        "John Carlton": "Here’s the ugly little truth nobody else will say out loud.",
-        "Jay Abraham": "If you’re serious about leverage, this next part matters.",
-        "Robert Bly": "Let’s break this down like a classic direct-response pro.",
-        "Neville Medhora": "Okay, here’s the simple version no one is telling you.",
-        "Joanna Wiebe": "Let’s talk about what your customers are actually saying in their heads.",
-        "Hybrid Mix": "Let’s mix hard-hitting direct response with what your market really cares about.",
-    }.get(master_style, "Here’s the real story no one else is telling you.")
-
-    # --- Sales Copy Body ---
-    bullets = "\n".join([f"- {b}" for b in benefits_list])
-
-    sales_copy = textwrap.dedent(
-        f"""
-        [{master_style}-inspired angle – {style_flavor}]
-
-        ATTENTION
-
-        {emotion_intro}
-
-        If you're {audience_short}, you’ve probably tried to {base_benefit.lower()} before —
-        but no matter what you’ve done, something always felt off. There’s a good chance
-        the problem isn’t you... it’s the message you’ve been fed.
-
-        Right now, your ideal prospects are scrolling past yet another promise that sounds
-        exactly like every other one they’ve seen. Deep down, they’ve trained themselves
-        not to believe those promises.
-
-        INTEREST
-
-        **{product_name}** is built to slice through that skepticism.
-
-        {product_desc.strip()}
-
-        It works because it speaks directly to what your market already obsesses over most.
-        You’re not begging for attention — you’re joining the conversation in their head.
-
-        In practice, that means you {awareness_angle}. Instead of sounding like everybody else,
-        you become the only obvious choice.
-
-        DESIRE
-
-        Imagine this actually working for you:
-
-        {bullets}
-
-        Each line of copy becomes another little “yes” that stacks in their mind.
-        They stop skimming and start picturing themselves living with the benefits
-        you’re describing.
-
-        ACTION
-
-        If you're serious about {base_benefit.lower()} and ready to use copy that finally
-        matches the real value you deliver, this is your move:
-
-        👉 {cta.strip().rstrip('.')}
-
-        {cta_phrase}
-        """
-    ).strip()
-
-    return headlines, sales_copy
-
-
 def generate_email_sequence(
     product_name: str,
     product_desc: str,
@@ -776,7 +674,7 @@ def generate_email_sequence(
 
     sequence: List[Dict[str, str]] = []
 
-    # Email 1 – Pattern interrupt / big idea
+    # Email 1
     subject1 = f"[{master_style}] The painful mistake your {product_name} solves"
     body1 = textwrap.dedent(
         f"""
@@ -811,7 +709,7 @@ def generate_email_sequence(
     ).strip()
     sequence.append({"subject": subject1, "body": body1})
 
-    # Email 2 – Story / emotional agitation
+    # Email 2
     subject2 = f"That moment when you almost gave up on {main_benefit.lower()}…"
     body2 = textwrap.dedent(
         f"""
@@ -842,7 +740,7 @@ def generate_email_sequence(
     ).strip()
     sequence.append({"subject": subject2, "body": body2})
 
-    # Email 3 – Proof / mechanism
+    # Email 3
     subject3 = f"How {product_name} helps you {main_benefit.lower()} (without the usual grind)"
     body3 = textwrap.dedent(
         f"""
@@ -868,7 +766,7 @@ def generate_email_sequence(
     ).strip()
     sequence.append({"subject": subject3, "body": body3})
 
-    # Email 4 – Offer reveal
+    # Email 4
     subject4 = f"Ready to actually {main_benefit.lower()} with {product_name}?"
     body4 = textwrap.dedent(
         f"""
@@ -892,7 +790,7 @@ def generate_email_sequence(
     ).strip()
     sequence.append({"subject": subject4, "body": body4})
 
-    # Email 5 – Last call
+    # Email 5
     subject5 = f"Last call: your next shot at {main_benefit.lower()}"
     body5 = textwrap.dedent(
         f"""
@@ -1199,7 +1097,7 @@ def page_generate_copy():
         "Always test in the real world — the market is the final judge."
     )
 
-       # --- Optional AI enhancement ---
+    # --- Optional AI enhancement ---
     st.markdown("---")
     st.markdown("### 🧠 Smart Rewrite (AI-Enhanced)")
 
@@ -1261,7 +1159,6 @@ Now return the rewritten copy only.
             st.markdown(result)
         else:
             st.error(result)
-
 
     st.markdown("---")
     st.caption(
@@ -1696,7 +1593,7 @@ def page_ab_split_tester():
         cvr = (conv / clicks * 100) if clicks > 0 else 0.0
         cr_total = (conv / imp * 100) if imp > 0 else 0.0
         epc = (rev / clicks) if clicks > 0 else 0.0
-        roi = ((rev - imp) / imp * 100) if imp > 0 and rev > 0 else 0.0  # impressions ~ cost proxy
+        roi = ((rev - imp) / imp * 100) if imp > 0 and rev > 0 else 0.0
         return ctr, cvr, cr_total, epc, roi
 
     ctr_a, cvr_a, cr_a, epc_a, roi_a = calc_metrics(imp_a, clicks_a, conv_a, rev_a)
@@ -1727,7 +1624,6 @@ def page_ab_split_tester():
         st.write(f"EPC: ${epc_b:.2f}")
         st.write(f"ROI (rough): {roi_b:.2f}%")
 
-    # Determine winners
     winner_ctr = "A" if ctr_a > ctr_b else ("B" if ctr_b > ctr_a else "Tie")
     winner_cvr = "A" if cvr_a > cvr_b else ("B" if cvr_b > cvr_a else "Tie")
     winner_epc = "A" if epc_a > epc_b else ("B" if epc_b > epc_a else "Tie")
@@ -1783,7 +1679,6 @@ def page_analytics():
         submitted = st.form_submit_button("➕ Add / Update Campaign Snapshot")
 
     if submitted:
-        # Calculate metrics
         cpc = (spend / clicks) if clicks > 0 else 0.0
         cpl = (spend / leads) if leads > 0 else 0.0
         cps = (spend / sales) if sales > 0 else 0.0
@@ -2095,7 +1990,6 @@ def page_settings_integrations():
 def main():
     # --- SIDEBAR ---
     with st.sidebar:
-        # Illuminati logo text
         st.markdown(
             """
             <div class="sidebar-logo">
@@ -2105,7 +1999,6 @@ def main():
             unsafe_allow_html=True,
         )
 
-        # Navigation
         page = st.radio(
             "Navigate",
             [
@@ -2123,48 +2016,11 @@ def main():
             ],
         )
 
-        # Divider + Earl Nightingale block (SIDEBAR ONLY)
         st.markdown("---")
         st.markdown("##### 🎧 Mindset Fuel")
 
         st.markdown(
             """
-            <style>
-            .inspire-video-container {
-                text-align: center;
-                margin-top: 6px;
-            }
-
-            .inspire-video-frame {
-                border: 2px solid #d4af37;
-                border-radius: 10px;
-                box-shadow:
-                    0 0 8px rgba(212, 175, 55, 0.7),
-                    0 0 16px rgba(155, 17, 30, 0.5);
-                animation: glowpulse 4s ease-in-out infinite alternate;
-            }
-
-            @keyframes glowpulse {
-                from {
-                    box-shadow:
-                        0 0 6px rgba(212, 175, 55, 0.4),
-                        0 0 12px rgba(155, 17, 30, 0.25);
-                }
-                to {
-                    box-shadow:
-                        0 0 12px rgba(212, 175, 55, 0.9),
-                        0 0 22px rgba(155, 17, 30, 0.7);
-                }
-            }
-
-            .inspire-caption {
-                font-size: 0.7rem;
-                color: #cccccc;
-                margin-top: 3px;
-                line-height: 1.2;
-            }
-            </style>
-
             <div class="inspire-video-container">
                 <iframe
                     class="inspire-video-frame"
@@ -2185,103 +2041,7 @@ def main():
             unsafe_allow_html=True,
         )
 
-    # --- MAIN AREA (no video here, only your pages) ---
-    if page == "Dashboard":
-        page_dashboard()
-    elif page == "Generate Copy":
-        page_generate_copy()
-    elif page == "Email Sequences":
-        page_email_sequences()
-    elif page == "Classified Ad Writer":
-        page_classified_writer()
-    elif page == "Manual & Lead Magnet":
-        page_manual_assets()
-    elif page == "Traffic & Networks":
-        page_traffic_networks()
-    elif page == "A/B Split Tester":
-        page_ab_split_tester()
-    elif page == "Analytics":
-        page_analytics()
-    elif page == "System Checklist":
-        page_system_checklist()
-    elif page == "Copy Analyzer":
-        page_copy_analyzer()
-    elif page == "Settings & Integrations":
-        page_settings_integrations()
-
-    # Global footer
-    st.markdown(
-        """
-        <div class="illuminati-footer">
-            © 2025 <strong>DeAndre Jefferson</strong><br/>
-            Strategic Copy, AI, and Influence Engineering.<br/>
-            Built with Python + Streamlit + OpenAI + Gemini APIs.
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # Divider
-    st.markdown("---")
-    st.markdown("#### 🎧 The Strangest Secret")
-
-    st.markdown(
-        """
-        <style>
-        /* Glowing aura around the video */
-        .inspire-video-container {
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        .inspire-video-frame {
-            border: 2px solid #d4af37;
-            border-radius: 12px;
-            box-shadow:
-                0 0 10px rgba(212, 175, 55, 0.7),
-                0 0 20px rgba(155, 17, 30, 0.5);
-            animation: glowpulse 4s ease-in-out infinite alternate;
-        }
-
-        @keyframes glowpulse {
-            from {
-                box-shadow:
-                    0 0 8px rgba(212, 175, 55, 0.5),
-                    0 0 16px rgba(155, 17, 30, 0.3);
-            }
-            to {
-                box-shadow:
-                    0 0 14px rgba(212, 175, 55, 0.9),
-                    0 0 28px rgba(155, 17, 30, 0.7);
-            }
-        }
-
-        .inspire-caption {
-            font-size: 0.75rem;
-            color: #aaaaaa;
-            margin-top: 4px;
-        }
-        </style>
-
-        <div class="inspire-video-container">
-            <iframe
-                class="inspire-video-frame"
-                width="250"
-                height="140"
-                src="https://www.youtube.com/embed/IN2H8U9Zr3k?autoplay=0&loop=1&playlist=IN2H8U9Zr3k"
-                title="The Strangest Secret by Earl Nightingale"
-                frameborder="0"
-                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen
-            ></iframe>
-            <p class="inspire-caption">
-                Earl Nightingale — “We become what we think about.”
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
+    # --- MAIN AREA ---
     if page == "Dashboard":
         page_dashboard()
     elif page == "Generate Copy":
