@@ -1,4 +1,4 @@
-# 🔺 Illuminati AI Copy Master – Main App with AI Engines
+# 🔺 Illuminati AI Copy Master – Main App with AI Engines + Checklist Presets + Traffic Networks
 # Author: DeAndre Jefferson
 
 import streamlit as st
@@ -32,6 +32,10 @@ if "openai_api_key" not in st.session_state:
 if "gemini_api_key" not in st.session_state:
     st.session_state["gemini_api_key"] = ""
 
+if "checklist_presets" not in st.session_state:
+    # name -> {key: bool}
+    st.session_state["checklist_presets"] = {}
+
 # --- Sidebar Navigation ---
 st.sidebar.markdown("### 🔺 Illuminati AI Copy Master")
 st.sidebar.caption("Strategic Copy & Traffic Command Console")
@@ -43,6 +47,7 @@ page = st.sidebar.radio(
         "Generate Copy",
         "Manual & Assets",
         "System Checklist",
+        "Traffic & Networks",
         "Settings & Integrations",
     ]
 )
@@ -74,7 +79,7 @@ def generate_with_openai(prompt: str) -> str:
     if openai is None:
         raise RuntimeError("openai library is not installed.")
 
-    # Legacy-style call (compatible with most OpenAI Python versions)
+    # Legacy-style call (works with most OpenAI Python client versions)
     openai.api_key = api_key
     resp = openai.ChatCompletion.create(
         model="gpt-4",
@@ -231,7 +236,8 @@ Use the navigation on the left to access:
 - **Dashboard** – overview  
 - **Generate Copy** – rule-based + AI engines  
 - **Manual & Assets** – generate your Illuminati AI manual package  
-- **System Checklist** – launch checklist  
+- **System Checklist** – launch checklist with presets  
+- **Traffic & Networks** – traffic sources & quick analyzer  
 - **Settings & Integrations** – configure engine mode & API keys  
 """)
 
@@ -466,7 +472,7 @@ SALES COPY:
 
 # --- Manual & Assets Page ---
 def page_manual_assets():
-    st.header("🔺 Illuminati AI Copy Master Manual & Assets")
+    st.header("📕 Illuminati AI Copy Master Manual & Assets")
     st.markdown("""
 Generate your **Illuminati AI Copy Master Manual** package:
 
@@ -501,7 +507,7 @@ Click the button below to generate the package.
             st.error("Package ZIP not found. Please rerun the generator.")
 
 
-# --- System Checklist Page ---
+# --- System Checklist Page (with presets) ---
 def page_system_checklist():
     st.header("✅ System Checklist")
 
@@ -513,15 +519,14 @@ Each item helps make sure:
 - Your pages work  
 - Your tracking is live  
 - Your traffic isn’t being wasted  
-    """)
+""")
 
-    # Define checklist items grouped by section
     sections = {
         "Offer & Positioning": [
             "Core offer is clearly defined (who it's for, what it does, main promise).",
             "Main benefit/headline is written and tested for clarity.",
             "Guarantee / risk reversal is decided (or intentionally omitted).",
-            "Price and payment structure are final (no ‘I’ll decide later’).",
+            "Price and payment structure are final.",
         ],
         "Funnel Assets": [
             "Opt-in page is built and loads correctly on desktop & mobile.",
@@ -533,7 +538,7 @@ Each item helps make sure:
             "Primary tracking pixels / tags are installed (if applicable).",
             "UTM parameters or tracking links are set for each traffic source.",
             "Test opt-in completed and confirmed the lead shows up where expected.",
-            "Test ‘purchase’ or main conversion flow works end-to-end.",
+            "Test 'purchase' or main conversion flow works end-to-end.",
         ],
         "Traffic Plan": [
             "At least one traffic source is chosen (Solo Ads / Banners / Classifieds / etc.).",
@@ -548,27 +553,22 @@ Each item helps make sure:
         ],
     }
 
-    # Render checklist with stateful checkboxes
     total_items = 0
     completed_items = 0
 
+    # Render checklist with stateful checkboxes
     for section_name, items in sections.items():
         st.subheader(section_name)
-        for item in items:
-            key = f"checklist_{section_name}_{item}"  # unique key per item
+        for idx, item in enumerate(items):
+            key = f"checklist_{section_name}_{idx}"
             checked = st.checkbox(item, key=key)
             total_items += 1
             if checked:
                 completed_items += 1
-
         st.markdown("---")
 
     # Progress summary
-    if total_items > 0:
-        percent = int((completed_items / total_items) * 100)
-    else:
-        percent = 0
-
+    percent = int((completed_items / total_items) * 100) if total_items > 0 else 0
     st.markdown(f"### 📊 Completion: **{completed_items} / {total_items}** items checked ({percent}%)")
 
     if percent < 50:
@@ -578,6 +578,208 @@ Each item helps make sure:
     else:
         st.balloons()
         st.success("All checklist items complete. You’re ready to carefully test and scale traffic.")
+
+    # --- Preset Save/Load ---
+    st.markdown("---")
+    st.markdown("### 💾 Checklist Presets (this session only)")
+
+    col1, col2, col3 = st.columns([2, 2, 1])
+
+    with col1:
+        preset_name = st.text_input("Preset name", "")
+
+    with col2:
+        if st.button("Save preset"):
+            if not preset_name.strip():
+                st.warning("Please enter a preset name before saving.")
+            else:
+                # Capture all checklist_* keys
+                snapshot = {}
+                for section_name, items in sections.items():
+                    for idx, _ in enumerate(items):
+                        key = f"checklist_{section_name}_{idx}"
+                        snapshot[key] = bool(st.session_state.get(key, False))
+                st.session_state["checklist_presets"][preset_name.strip()] = snapshot
+                st.success(f"Preset '{preset_name.strip()}' saved for this session.")
+
+    with col3:
+        if st.button("Clear all"):
+            for section_name, items in sections.items():
+                for idx, _ in enumerate(items):
+                    key = f"checklist_{section_name}_{idx}"
+                    st.session_state[key] = False
+            st.experimental_rerun()
+
+    # Load preset
+    if st.session_state["checklist_presets"]:
+        load_name = st.selectbox(
+            "Load preset",
+            options=["(Select preset)"] + list(st.session_state["checklist_presets"].keys()),
+            index=0,
+        )
+        if load_name != "(Select preset)":
+            if st.button("Load selected preset"):
+                snapshot = st.session_state["checklist_presets"][load_name]
+                for key, val in snapshot.items():
+                    st.session_state[key] = bool(val)
+                st.success(f"Preset '{load_name}' loaded.")
+                st.experimental_rerun()
+    else:
+        st.caption("No presets saved yet. Save one above to reuse this configuration in this session.")
+
+
+# --- Traffic & Networks Page ---
+def page_traffic_networks():
+    st.header("🚦 Traffic & Networks")
+    st.markdown("""
+This section gives you a **starting map** of places you can get traffic without heavy approval processes,
+plus a quick analyzer so you can compare results from:
+
+- Affiliate offers  
+- Banner / solo ad vendors  
+- Free classified ad sites  
+
+Always double-check each platform’s current policies and terms — they can change anytime.
+""")
+
+    tabs = st.tabs([
+        "Affiliate Networks",
+        "Banner & Solo Ad Networks",
+        "Free Classified Sites",
+        "Quick Campaign Analyzer",
+    ])
+
+    # --- Affiliate Networks ---
+    with tabs[0]:
+        st.subheader("🌐 Affiliate Networks (Generally Easy to Join)")
+        st.markdown("""
+These networks typically allow signups with standard registration (no special invite required).  
+Always review their current rules and verticals allowed.
+
+- ClickBank  
+- JVZoo  
+- WarriorPlus  
+- Digistore24  
+- Impact  
+- ShareASale  
+- CJ (Commission Junction) – often requires approval per advertiser  
+- PartnerStack (for SaaS offers)  
+""")
+        st.info("Use these to find offers that match your list, niche, or funnel theme. Start with a small test.")
+
+    # --- Banner & Solo Ad Networks ---
+    with tabs[1]:
+        st.subheader("📢 Banner & Solo Ad Traffic (Lower Barrier Platforms)")
+
+        st.markdown("**Solo Ad Marketplaces:**")
+        st.markdown("""
+- Udimi  
+- TrafficForMe  
+- SoloAdsX / similar brokers  
+- Individual list sellers (research reputation carefully)  
+""")
+
+        st.markdown("**Banner / Display Ad Networks (lower barrier than Google/Meta, but still have policies):**")
+        st.markdown("""
+- PropellerAds  
+- Adsterra  
+- HilltopAds  
+- RichAds  
+- 7Search PPC  
+""")
+
+        st.warning(
+            "Even if signup is easy, you are still responsible for compliance and truthful advertising. "
+            "Avoid banned content and always follow their policies."
+        )
+
+    # --- Free Classified Sites ---
+    with tabs[2]:
+        st.subheader("📋 Free Classified Ad Sites (High or Notable Traffic)")
+        st.markdown("""
+These platforms often allow free or low-cost classified ads. Availability and rules can vary by country.
+
+- Craigslist (many regions)  
+- ClassifiedAds.com  
+- Oodle  
+- Geebo  
+- Locanto  
+- Facebook Marketplace / local groups (check group rules)  
+- Gumtree (UK / AU)  
+- Kijiji (CA)  
+
+Use short, direct ads with a clear benefit and a single next step (click, call, opt in).
+""")
+        st.info("Write like a human local marketer, not a spam bot. Keep claims realistic and truthful.")
+
+    # --- Quick Campaign Analyzer ---
+    with tabs[3]:
+        st.subheader("📊 Quick Campaign Analyzer")
+
+        st.markdown("""
+Use this tool to compare basic performance for a single campaign in one channel.
+You can re-use it for **Affiliate**, **Banner/Solo**, or **Classifieds** and record the numbers elsewhere.
+""")
+
+        channel = st.selectbox(
+            "Channel Type",
+            ["Affiliate offer", "Banner / Solo Ads", "Free Classifieds"],
+        )
+
+        col1, col2 = st.columns(2)
+        with col1:
+            campaign_name = st.text_input("Campaign name / label", "")
+            source_name = st.text_input("Traffic source / vendor / site", "")
+        with col2:
+            spend = st.number_input("Ad spend / cost ($)", min_value=0.0, step=1.0)
+            clicks = st.number_input("Clicks", min_value=0, step=1)
+            conversions = st.number_input("Conversions (leads or sales)", min_value=0, step=1)
+            revenue = st.number_input("Revenue generated ($)", min_value=0.0, step=1.0)
+
+        if st.button("Analyze performance"):
+            if clicks > 0:
+                ctr = None  # CTR not calculated here, but could be if impressions were tracked
+                cpc = spend / clicks if clicks else 0.0
+            else:
+                cpc = 0.0
+
+            if conversions > 0:
+                cpa = spend / conversions if conversions else 0.0
+                epc = revenue / clicks if clicks else 0.0
+                conv_rate = (conversions / clicks * 100) if clicks else 0.0
+            else:
+                cpa = 0.0
+                epc = revenue / clicks if clicks else 0.0 if clicks else 0.0
+                conv_rate = (conversions / clicks * 100) if clicks else 0.0
+
+            roas = (revenue / spend) if spend > 0 else 0.0
+
+            st.markdown("#### Results")
+
+            st.write(f"**Channel:** {channel}")
+            if campaign_name:
+                st.write(f"**Campaign:** {campaign_name}")
+            if source_name:
+                st.write(f"**Source / Vendor:** {source_name}")
+
+            st.write(f"- Spend: ${spend:,.2f}")
+            st.write(f"- Clicks: {clicks}")
+            st.write(f"- Conversions: {conversions}")
+            st.write(f"- Revenue: ${revenue:,.2f}")
+            st.write(f"- CPC (Cost per click): ${cpc:,.2f}")
+            st.write(f"- CPA (Cost per acquisition): ${cpa:,.2f}")
+            st.write(f"- EPC (Earnings per click): ${epc:,.2f}")
+            st.write(f"- Conversion rate: {conv_rate:.2f}%")
+            st.write(f"- ROAS (Return on ad spend): {roas:.2f}x")
+
+            if roas < 1 and conversions == 0:
+                st.info("This test lost money and produced no conversions. Consider changing the offer, angle, or traffic source.")
+            elif roas < 1:
+                st.info("ROAS is below break-even. Look for ways to improve your messaging, targeting, or back-end monetization.")
+            elif roas >= 1 and roas < 2:
+                st.success("You are near or above break-even. Tighten the funnel and consider controlled scaling.")
+            else:
+                st.success("Strong ROAS. Monitor closely and scale carefully without violating any platform rules.")
 
 
 # --- Settings & Integrations Page ---
@@ -643,5 +845,8 @@ elif page == "Manual & Assets":
     page_manual_assets()
 elif page == "System Checklist":
     page_system_checklist()
+elif page == "Traffic & Networks":
+    page_traffic_networks()
 elif page == "Settings & Integrations":
     page_settings()
+
