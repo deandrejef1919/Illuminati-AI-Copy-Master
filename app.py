@@ -18,7 +18,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# Custom CSS: red / black / gold theme
+# Custom CSS: red / black / gold theme with glow + footer
 APP_CSS = """
 <style>
 /* Global */
@@ -52,10 +52,25 @@ body, .stApp {
     opacity: 0.85;
 }
 
-/* Pyramid icon container */
+/* Pyramid icon container with glow */
 .illuminati-pyramid {
     font-size: 2.5rem;
     margin-bottom: 0.25rem;
+    text-shadow:
+        0 0 14px rgba(245, 215, 110, 0.95),
+        0 0 26px rgba(155, 17, 30, 0.75);
+}
+
+/* Sidebar logo glow */
+.sidebar-logo {
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0.5rem 0 1.2rem 0;
+    color: #f5d76e;
+    text-shadow:
+        0 0 12px rgba(245, 215, 110, 0.9),
+        0 0 24px rgba(155, 17, 30, 0.7);
 }
 
 /* Cards */
@@ -96,6 +111,17 @@ section[data-testid="stSidebar"] {
 }
 section[data-testid="stSidebar"] * {
     color: #f5f5f5 !important;
+}
+
+/* Footer */
+.illuminati-footer {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #aaaaaa;
+    margin-top: 2.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(245, 215, 110, 0.18);
+    opacity: 0.9;
 }
 </style>
 """
@@ -1062,7 +1088,7 @@ def page_traffic_networks():
     st.markdown(
         """
         Below are direct links to affiliate networks, banner/solo ad platforms, and free
-        classified sites that generally have **low or no special approval barriers**.
+        classified sites that generally have low or no special approval barriers.
         Always double-check each site’s rules and policies.
         """
     )
@@ -1230,7 +1256,7 @@ def page_ab_split_tester():
     st.markdown(
         """
         Use this to compare two variants of a headline, sales page, email, ad, or funnel.
-        Enter impressions, clicks, and conversions to see CTR, CVR, EPC, and which variant is winning.
+        Enter impressions, clicks, and conversions to see CTR, CVR, EPC, ROI, and which variant is winning.
         """
     )
 
@@ -1273,7 +1299,7 @@ def page_ab_split_tester():
         cvr = (conv / clicks * 100) if clicks > 0 else 0.0
         cr_total = (conv / imp * 100) if imp > 0 else 0.0
         epc = (rev / clicks) if clicks > 0 else 0.0
-        roi = ((rev - imp) / imp * 100) if imp > 0 and rev > 0 else 0.0  # treating impressions as rough cost proxy
+        roi = ((rev - imp) / imp * 100) if imp > 0 and rev > 0 else 0.0  # impressions ~ cost proxy
         return ctr, cvr, cr_total, epc, roi
 
     ctr_a, cvr_a, cr_a, epc_a, roi_a = calc_metrics(imp_a, clicks_a, conv_a, rev_a)
@@ -1332,7 +1358,7 @@ def page_analytics():
     st.markdown(
         """
         Track key numbers for your campaigns (affiliate offers, solo ads, banners, classifieds)
-        and see basic metrics like CPC, CPL, CPS, and ROI. Data is stored only in your session.
+        and see basic metrics like CPC, CPL, CPS, EPC, and ROI. Data is stored only in your session.
         """
     )
 
@@ -1392,8 +1418,7 @@ def page_analytics():
         st.info("No campaign snapshots yet. Add one above to start tracking.")
 
     st.caption(
-        "Use this tab to judge which traffic sources and offers are actually worth scaling. "
-        "Kennedy would say: ‘What you can measure, you can manage — and get paid from.’"
+        "Use this tab to judge which traffic sources and offers are actually worth scaling."
     )
 
 
@@ -1455,8 +1480,7 @@ def page_settings_integrations():
     st.markdown("### 📬 SendPulse – Recommended ESP")
     st.markdown(
         """
-        **SendPulse** is a multi-channel email marketing and automation platform with a generous free tier
-        (emails, chatbots, landing pages, and more).   
+        **SendPulse** is a multi-channel email marketing and automation platform with a generous free tier.
 
         - Create a free SendPulse account:  
           👉 [SendPulse Registration](https://sendpulse.com/register)
@@ -1472,7 +1496,7 @@ def page_settings_integrations():
 
     st.markdown(
         """
-        In Zapier, create a Zap with **Webhooks by Zapier** → **Catch Hook** to get a unique URL.   
+        In Zapier, create a Zap with **Webhooks by Zapier** → **Catch Hook** to get a unique URL.  
         Paste that URL below and you can send simple JSON payloads from this app (for example, when you finalize a winning variant).
         """
     )
@@ -1512,7 +1536,14 @@ def page_settings_integrations():
 
 def main():
     with st.sidebar:
-        st.markdown("### 🔺 Illuminati AI")
+        st.markdown(
+            """
+            <div class="sidebar-logo">
+                🔺 Illuminati AI
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         page = st.radio(
             "Navigate",
             [
@@ -1549,6 +1580,18 @@ def main():
         page_system_checklist()
     elif page == "Settings & Integrations":
         page_settings_integrations()
+
+    # Global footer
+    st.markdown(
+        """
+        <div class="illuminati-footer">
+            © 2025 <strong>DeAndre Jefferson</strong><br/>
+            Strategic Copy, AI, and Influence Engineering.<br/>
+            Built with Python + Streamlit + OpenAI + Gemini APIs.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 if __name__ == "__main__":
