@@ -1,8 +1,20 @@
-# 🔺 Illuminati AI Copy Master – Minimal Stable App with Settings
+# 🔺 Illuminati AI Copy Master – Main App with AI Engines
 # Author: DeAndre Jefferson
 
 import streamlit as st
 import os
+
+# Optional AI libraries
+try:
+    import openai
+except ImportError:
+    openai = None
+
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
+
 
 # --- Session Defaults ---
 if "engine_mode" not in st.session_state:
