@@ -162,18 +162,7 @@ def generate_rule_based_copy(
     headlines = []
 
     # 1. Benefit + without pain
-    headlines.append(
-        f"{base_benefit} — without the usual { 'stress' if 'without' not in base_benefit.lower() else 'roadblocks' }"
-    )
-
-    # 2. How to + benefit
-    headlines.append(
-        f"How to {base_benefit.lower()} with {product_name} (Even If You Feel You’ve Tried Everything)"
-    )
-
-    # 3. Curiosity / shortcut
-    headlines.append(
-       headlines.append(
+  headlines.append(
     f"The {product_name} Shortcut That Quietly Turns Cold Traffic into Buyers"
 )
 
@@ -186,16 +175,15 @@ headlines.append(
     f"Use {product_name} to {base_benefit.lower()} in the Next 30 Days—Or Less"
 )
 
+if len(benefits_list) > 1:
+    second_benefit = benefits_list[1]
+    headlines.append(
+        f"Turn {second_benefit.lower()} into your unfair advantage with {product_name}"
     )
 
-    if len(benefits_list) > 1:
-        second_benefit = benefits_list[1]
-        headlines.append(
-            f"Turn {second_benefit.lower()} into your unfair advantage with {product_name}\"
-        )
+# Bullet list
+bullets = "".join([f"- {b}\n" for b in benefits_list]) if benefits_list else "- Clear, measurable results\n"
 
-    # Bullet list
-    bullets = "".join([f\"- {b}\\n\" for b in benefits_list]) if benefits_list else "- Clear, measurable results\n"
 
     sales_copy = f\"\"\"[{master_style}-inspired angle – {style_flavor}]
 
