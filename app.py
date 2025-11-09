@@ -1,7 +1,5 @@
 import streamlit as st
 import textwrap
-import random
-import os
 from typing import List, Tuple, Dict
 
 # -------------------------
@@ -288,12 +286,15 @@ def generate_rule_based_copy(
     # --------------------
     headlines: List[str] = []
 
-    headlines.append(
-        f"How {audience.splitlines()[0].strip().capitalize()} Can {base_benefit.capitalize()} with {product_name}"
-    )
+    first_aud_line = audience.splitlines()[0].strip() if audience else "your market"
 
     headlines.append(
-        f\"{product_name}: The \"\"{base_benefit.capitalize()}\"\" Shortcut You Can Use Starting Tonight\"
+        f"How {first_aud_line.capitalize()} Can {base_benefit.capitalize()} with {product_name}"
+    )
+
+    # This is the fixed line that previously caused the syntax error:
+    headlines.append(
+        f'{product_name}: The "{base_benefit.capitalize()}" Shortcut You Can Use Starting Tonight'
     )
 
     headlines.append(
@@ -304,16 +305,19 @@ def generate_rule_based_copy(
         f"Do You Make These Mistakes When You Try To {base_benefit.capitalize()}?"
     )
 
+    time_phrase = (
+        "30 Days"
+        if ("day" in product_desc.lower() or "30" in product_desc)
+        else "One Shot"
+    )
     headlines.append(
-        f"Give Me { '30 Days' if 'day' in product_desc.lower() or '30' in product_desc else 'One Shot' }, "
-        f"And I’ll Show You How To {base_benefit.capitalize()} With {product_name}"
+        f"Give Me {time_phrase}, And I’ll Show You How To {base_benefit.capitalize()} With {product_name}"
     )
 
     headlines.append(
-        f"{product_name}: Built For {audience.splitlines()[0].strip().capitalize()}, Not For The Masses"
+        f"{product_name}: Built For {first_aud_line.capitalize()}, Not For The Masses"
     )
 
-    # More variations if benefits_list is richer
     if len(benefits_list) > 1:
         second_benefit = benefits_list[1]
         headlines.append(
@@ -573,10 +577,9 @@ def generate_classified_ads(
     if len(desc_short) > 220:
         desc_short = desc_short[:217].rstrip() + "..."
 
-    template_lines = []
+    template_lines: List[str] = []
 
-    for i in range(num_ads):
-        hook = ""
+    for _ in range(num_ads):
         if master_style == "Gary Halbert":
             hook = f"STOP: {product_name} For {aud_short.capitalize()}"
         elif master_style == "David Ogilvy":
@@ -695,14 +698,12 @@ def page_generate_copy():
         """
     )
 
-    # Engine choice (for future OpenAI / Gemini wiring – currently rule-based only)
     engine_choice = st.selectbox(
         "Engine Mode",
-        ["Rule-based (local templates)", "OpenAI (needs API key)", "Gemini (needs API key)"],
+        ["Rule-based (local templates)", "OpenAI (coming later)", "Gemini (coming later)"],
         index=0,
     )
 
-    # Niche & master selection
     col_top1, col_top2, col_top3 = st.columns(3)
     with col_top1:
         niche = st.selectbox(
@@ -779,11 +780,10 @@ def page_generate_copy():
         if line.strip()
     ]
 
-    # Currently we always use rule-based copy; AI engines are for later upgrade.
     if engine_choice != "Rule-based (local templates)":
         st.warning(
-            "OpenAI / Gemini engines are not wired in this minimal version yet. "
-            "You can still generate strong rule-based copy below."
+            "OpenAI / Gemini engines are not wired in this minimal stable version yet. "
+            "Using rule-based copy below."
         )
 
     headlines, sales_copy = generate_rule_based_copy(
@@ -807,7 +807,7 @@ def page_generate_copy():
 
     st.markdown("---")
     st.caption(
-        "Tip: Remember Ogilvy – “The consumer isn’t a moron, she’s your wife.” "
+        "Remember Ogilvy: “The consumer isn’t a moron, she’s your wife.” "
         "Respect your reader’s intelligence while still selling hard."
     )
 
@@ -1272,7 +1272,6 @@ def page_settings_integrations():
 # -------------------------
 
 def main():
-    # Sidebar navigation
     with st.sidebar:
         st.markdown("### 🔺 Illuminati AI")
         page = st.radio(
@@ -1309,3 +1308,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
