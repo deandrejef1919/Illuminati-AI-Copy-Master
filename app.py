@@ -460,7 +460,7 @@ SALES COPY:
         st.markdown(ai_text)
         return
 
-       # GEMINI ENGINE
+        # --- GEMINI ENGINE ---
     if engine_choice == "Gemini":
         try:
             ai_text = generate_with_gemini(prompt)
@@ -468,7 +468,7 @@ SALES COPY:
             st.markdown(ai_text)
             return
         except Exception:
-            # Gemini is not reachable / models return 404 — use graceful fallback
+            # Gemini unavailable → fall back gracefully
             st.warning(
                 "Gemini is currently not available from this environment (model 404s). "
                 "Using rule-based copy instead. You can switch to OpenAI in Settings for AI-generated copy."
@@ -490,6 +490,7 @@ SALES COPY:
             st.markdown("### 📜 Sales Copy Draft (Rule-based fallback)")
             st.code(sales_copy, language="markdown")
             return
+
 
 
 # --- Classified Ad Writer Page ---
