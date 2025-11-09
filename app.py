@@ -459,7 +459,6 @@ SALES COPY:
         st.markdown("### 🤖 OpenAI Output")
         st.markdown(ai_text)
         return
-
         # --- GEMINI ENGINE ---
     if engine_choice == "Gemini":
         try:
