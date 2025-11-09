@@ -477,6 +477,7 @@ SALES COPY:
 
 
 # --- Classified Ad Writer Page ---
+# --- Classified Ad Writer Page ---
 def page_classified_writer():
     st.header("📢 Classified Ad Writer")
 
@@ -501,9 +502,17 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
 
     with st.form("classified_form"):
         product_name = st.text_input("Product / Service Name", "")
-        product_desc = st.text_area("Very Short Description (1–3 sentences)", "")
+        product_desc = st.text_area(
+            "Very Short Description (1–3 sentences)",
+            "",
+            help="Keep this tight. We'll trim it further so it fits classified formats."
+        )
         location = st.text_input("Location / Market (optional)", "Online / Worldwide")
-        audience = st.text_area("Ideal Prospect (who should respond?)", "")
+        audience = st.text_area(
+            "Ideal Prospect (who should respond?)",
+            "",
+            help="One or two lines max. If you paste a long avatar, we'll only use the first line."
+        )
         benefits_text = st.text_area(
             "Main Benefits (one per line, keep them simple)",
             placeholder="E.g.\nLose 10 lbs without starving\nWork from home part-time\nGet more leads without cold calling",
@@ -550,34 +559,150 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
         st.error("Please provide at least a product name, short description, and contact/link.")
         return
 
+    # --- Shared helpers ---
     benefits_list = [b.strip() for b in benefits_text.split("\n") if b.strip()]
+
+    # Use only the first line of any long avatar blob
+    audience_short = audience.splitlines()[0].strip() if audience.strip() else "people who are ready for a change"
+
+    # Shorten description to keep ads tight
+    desc_short = product_desc.strip()
+    if len(desc_short) > 220:
+        desc_short = desc_short[:217] + "..."
+
+    base_benefit = benefits_list[0] if benefits_list else "get real results without the usual struggle"
+    second_benefit = benefits_list[1] if len(benefits_list) > 1 else None
+
+    # Map master to a simple flavor hint
+    if master_style == "Gary Halbert":
+        style_hint = "emotional, direct-mail style with a strong hook and clear self-interest."
+    elif master_style == "David Ogilvy":
+        style_hint = "clear benefit, specific promise, and respect for the reader's intelligence."
+    elif master_style == "Dan Kennedy":
+        style_hint = "no-BS, direct response tone with focus on money, time, and results."
+    elif master_style == "John Carlton":
+        style_hint = "punchy, street-wise language with urgency and vivid payoff."
+    elif master_style == "Joe Sugarman":
+        style_hint = "curiosity and a conversational 'slippery slide' feel."
+    elif master_style == "Robert Bly":
+        style_hint = "simple, useful, ultra-specific phrasing."
+    elif master_style == "Neville Medhora":
+        style_hint = "short, funny, human lines that feel like a friend wrote them."
+    else:
+        style_hint = "classic direct response style adapted for short classified ads."
 
     # RULE-BASED CLASSIFIED ADS
     if engine_choice == "Rule-based":
         ads = []
-        base_benefit = benefits_list[0] if benefits_list else "get real results without the usual struggle"
 
         for i in range(num_ads):
-            if i % 3 == 0:
-                headline = f"{base_benefit} – {product_name}"
-                body = f"{product_desc} Ideal for {audience or 'people who are ready for a change'}. {contact}"
-            elif i % 3 == 1 and len(benefits_list) > 1:
-                b2 = benefits_list[1]
-                headline = f"{b2} – Starting with {product_name}"
-                body = f"{product_desc} Located in {location}. {contact}"
-            else:
-                headline = f"{product_name} in {location}: {base_benefit}"
-                body = f"{product_desc} If this sounds like you ({audience or 'motivated and open-minded'}), {contact}"
+            pattern_type = i % 3
 
+            if pattern_type == 0:
+                # Halbert-style: bold benefit + curiosity
+                headline = f"{base_benefit} – {product_name}"
+                body_lines = [
+                    desc_short,
+                    f"Perfect for {audience_short} in {location}.",
+                    contact,
+                ]
+            elif pattern_type == 1:
+                # Ogilvy-style: specific, clean promise
+                benefit_line = second_benefit or base_benefit
+                headline = f"{product_name}: {benefit_line}"
+                body_lines = [
+                    desc_short,
+                    f"If you're {audience_short.lower()}, this was built for you.",
+                    contact,
+                ]
+            else:
+                # Kennedy-style: direct offer + urgency
+                headline = f"{product_name} – Limited Spots for {audience_short}"
+                body_lines = [
+                    desc_short,
+                    "Serious inquiries only. No hype, just results.",
+                    contact,
+                ]
+
+            body = " ".join(line.strip() for line in body_lines if line.strip())
             ads.append((headline, body))
 
         st.markdown("### 📝 Classified Ad Variations (Rule-based)")
+        st.caption(f"Style influence: {master_style} – {style_hint}")
         for i, (h, b) in enumerate(ads, start=1):
             st.markdown(f"**Ad {i}: {h}**")
             st.markdown(b)
             st.markdown("---")
 
         return
+
+    # --- AI-POWERED CLASSIFIED ADS ---
+    prompt = f"""
+You are a legendary direct response copywriter specializing in short classified ads, channeling the style of {master_style}.
+
+Write in a way that feels like: {style_hint}
+
+TASK:
+Write {num_ads} different classified ads for the following offer.
+
+Each ad must:
+- Have ONE short headline
+- Have 1–3 short sentences of body copy
+- Be optimized for response on classified ad sites (e.g., Craigslist, Locanto, etc.)
+- Use clear, simple, human language (no corporate jargon)
+- Match this awareness level: {awareness}
+- End with this clear next step: "{contact}"
+
+CONTEXT:
+
+Product / Service Name:
+{product_name}
+
+Very Short Description:
+{desc_short}
+
+Location / Market:
+{location}
+
+Ideal Prospect (short):
+{audience_short}
+
+Main Benefits:
+{benefits_text}
+
+OUTPUT FORMAT (IMPORTANT):
+
+AD 1:
+Headline: ...
+Body: ...
+
+AD 2:
+Headline: ...
+Body: ...
+
+(Continue up to {num_ads})
+""".strip()
+
+    if engine_choice == "OpenAI":
+        try:
+            ai_text = generate_with_openai(prompt)
+        except Exception as e:
+            st.error(f"OpenAI classified ad generation failed: {e}")
+            return
+        st.markdown("### 🤖 OpenAI Classified Ads")
+        st.markdown(ai_text)
+        return
+
+    if engine_choice == "Gemini":
+        try:
+            ai_text = generate_with_gemini(prompt)
+        except Exception as e:
+            st.error(f"Gemini classified ad generation failed: {e}")
+            return
+        st.markdown("### 🤖 Gemini Classified Ads")
+        st.markdown(ai_text)
+        return
+
 
     # AI-POWERED CLASSIFIED ADS
     prompt = f"""
