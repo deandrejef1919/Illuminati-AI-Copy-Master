@@ -2093,7 +2093,9 @@ def page_settings_integrations():
 # -------------------------
 
 def main():
+    # --- SIDEBAR ---
     with st.sidebar:
+        # Illuminati logo text
         st.markdown(
             """
             <div class="sidebar-logo">
@@ -2102,6 +2104,8 @@ def main():
             """,
             unsafe_allow_html=True,
         )
+
+        # Navigation
         page = st.radio(
             "Navigate",
             [
@@ -2118,6 +2122,105 @@ def main():
                 "Settings & Integrations",
             ],
         )
+
+        # Divider + Earl Nightingale block (SIDEBAR ONLY)
+        st.markdown("---")
+        st.markdown("##### 🎧 Mindset Fuel")
+
+        st.markdown(
+            """
+            <style>
+            .inspire-video-container {
+                text-align: center;
+                margin-top: 6px;
+            }
+
+            .inspire-video-frame {
+                border: 2px solid #d4af37;
+                border-radius: 10px;
+                box-shadow:
+                    0 0 8px rgba(212, 175, 55, 0.7),
+                    0 0 16px rgba(155, 17, 30, 0.5);
+                animation: glowpulse 4s ease-in-out infinite alternate;
+            }
+
+            @keyframes glowpulse {
+                from {
+                    box-shadow:
+                        0 0 6px rgba(212, 175, 55, 0.4),
+                        0 0 12px rgba(155, 17, 30, 0.25);
+                }
+                to {
+                    box-shadow:
+                        0 0 12px rgba(212, 175, 55, 0.9),
+                        0 0 22px rgba(155, 17, 30, 0.7);
+                }
+            }
+
+            .inspire-caption {
+                font-size: 0.7rem;
+                color: #cccccc;
+                margin-top: 3px;
+                line-height: 1.2;
+            }
+            </style>
+
+            <div class="inspire-video-container">
+                <iframe
+                    class="inspire-video-frame"
+                    width="220"
+                    height="124"
+                    src="https://www.youtube.com/embed/IN2H8U9Zr3k?autoplay=0&loop=1&playlist=IN2H8U9Zr3k"
+                    title="The Strangest Secret by Earl Nightingale"
+                    frameborder="0"
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                ></iframe>
+                <p class="inspire-caption">
+                    🎧 <strong>Earl Nightingale</strong><br/>
+                    “We become what we think about.”
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # --- MAIN AREA (no video here, only your pages) ---
+    if page == "Dashboard":
+        page_dashboard()
+    elif page == "Generate Copy":
+        page_generate_copy()
+    elif page == "Email Sequences":
+        page_email_sequences()
+    elif page == "Classified Ad Writer":
+        page_classified_writer()
+    elif page == "Manual & Lead Magnet":
+        page_manual_assets()
+    elif page == "Traffic & Networks":
+        page_traffic_networks()
+    elif page == "A/B Split Tester":
+        page_ab_split_tester()
+    elif page == "Analytics":
+        page_analytics()
+    elif page == "System Checklist":
+        page_system_checklist()
+    elif page == "Copy Analyzer":
+        page_copy_analyzer()
+    elif page == "Settings & Integrations":
+        page_settings_integrations()
+
+    # Global footer
+    st.markdown(
+        """
+        <div class="illuminati-footer">
+            © 2025 <strong>DeAndre Jefferson</strong><br/>
+            Strategic Copy, AI, and Influence Engineering.<br/>
+            Built with Python + Streamlit + OpenAI + Gemini APIs.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     # Divider
     st.markdown("---")
     st.markdown("#### 🎧 The Strangest Secret")
