@@ -463,8 +463,163 @@ def generate_rule_based_copy(
 ) -> Tuple[List[str], str]:
     """
     Rule-based generator: headlines + sales copy
-    with smoother, more congruent master-style flow.
+    with cleaner benefit phrasing and better audience grammar.
     """
+
+    # --- Defaults from niche if missing ---
+    if not audience.strip():
+        niche_aud, _ = choose_niche_defaults(niche)
+        audience = niche_aud
+    if not benefits_list:
+        _, niche_benefits = choose_niche_defaults(niche)
+        benefits_list = niche_benefits
+
+    # --- Benefit cleanup: split "Short benefit (detail)" ---
+    raw_base = benefits_list[0].strip()
+    base_benefit_short = raw_base
+    base_benefit_detail = ""
+
+    # If we have something like "Cost-effective health independence (saves hundreds on pharmacy bills)"
+    if "(" in raw_base and ")" in raw_base:
+        before_paren = raw_base.split("(", 1)[0].strip()
+        inside_paren = raw_base.split("(", 1)[1].split(")", 1)[0].strip()
+        if before_paren:
+            base_benefit_short = before_paren  # "Cost-effective health independence"
+        base_benefit_detail = inside_paren    # "saves hundreds on pharmacy bills"
+
+    base_benefit_full = raw_base
+
+    audience_short = normalize_audience(audience)
+
+    style_flavor = MASTER_FLAVORS.get(
+        master_style, "direct-response style tuned for conversions"
+    )
+    awareness_angle = AWARENESS_ANGLE.get(
+        awareness, "meet them where they are and lead them step-by-step to a decision"
+    )
+
+    # --- Audience first line cleanup for headlines ---
+    first_aud_line = audience.splitlines()[0].strip() if audience else "your market"
+    # If the audience line looks like just an age range (e.g. '35-65+'), add "people aged"
+    if re.match(r"^\d", first_aud_line):
+        first_aud_line = f"people aged {first_aud_line}"
+
+    # --- Headlines (use short benefit, not full with parentheses) ---
+    headlines: List[str] = []
+
+    benefit_for_headline = base_benefit_short.capitalize()
+
+    headlines.append(
+        f"Finally: {product_name} That Helps You {benefit_for_headline} Without The Struggle"
+    )
+    headlines.append(
+        f"How {first_aud_line.capitalize()} Can {benefit_for_headline} with {product_name}"
+    )
+    headlines.append(
+        f'{product_name}: The "{benefit_for_headline}" Shortcut You Can Start Using Today'
+    )
+    headlines.append(
+        f"Do You Make These Mistakes When Trying to {benefit_for_headline}?"
+    )
+    headlines.append(
+        f"The Hidden Shortcut to {benefit_for_headline} No One Told You About"
+    )
+
+    if len(benefits_list) > 1:
+        second = benefits_list[1].strip()
+        headlines.append(
+            f'Turn "{second}" Into Your Edge With {product_name}'
+        )
+
+    # --- CTA Tone by niche ---
+    cta_map = {
+        "Natural / Alternative Healing": "Because your body was never designed to be at war with itself.",
+        "Spirituality & Alternative Beliefs": "Because your soul has been asking for more — this is you answering.",
+        "Specific Health Problems": "Your future self will thank you for not ignoring this moment.",
+        "Vanity Niches": "The mirror doesn’t have to be your enemy anymore.",
+        "Relationships": "Love rarely fixes itself — it responds when you do.",
+        "Money & Business": "Your bank account will remember the choices you make today.",
+        "General Interest & Survival": "You don’t rise to the occasion; you fall to your level of preparation.",
+    }
+    cta_phrase = cta_map.get(
+        niche, "Take action now while you’re still thinking about it."
+    )
+
+    # --- Emotional intro by master ---
+    emotion_intro = {
+        "Gary Halbert": "Let’s cut through the noise for a second.",
+        "David Ogilvy": "Here’s a fact few advertisers ever admit.",
+        "Dan Kennedy": "I’ll be blunt — most people get this part completely wrong.",
+        "Joe Sugarman": "Let me tell you a quick story that changed everything.",
+        "Eugene Schwartz": "The key isn’t desire — it’s understanding where that desire already lives.",
+        "John Carlton": "Here’s the ugly little truth nobody else will say out loud.",
+        "Jay Abraham": "If you’re serious about leverage, this next part matters.",
+        "Robert Bly": "Let’s break this down like a classic direct-response pro.",
+        "Neville Medhora": "Okay, here’s the simple version no one is telling you.",
+        "Joanna Wiebe": "Let’s talk about what your customers are actually saying in their heads.",
+        "Hybrid Mix": "Let’s mix hard-hitting direct response with what your market really cares about.",
+    }.get(master_style, "Here’s the real story no one else is telling you.")
+
+    # --- Bullet list ---
+    bullets = "\n".join([f"- {b}" for b in benefits_list])
+
+    # Optional extra sentence using the detail from parentheses, if available
+    detail_sentence = ""
+    if base_benefit_detail:
+        detail_sentence = f" In plain English: it literally {base_benefit_detail}."
+
+    # --- Sales Copy Body ---
+    sales_copy = textwrap.dedent(
+        f"""
+        [{master_style}-inspired angle – {style_flavor}]
+
+        ATTENTION
+
+        {emotion_intro}
+
+        If you're {audience_short}, you’ve probably tried to {base_benefit_short.lower()} before —
+        but no matter what you’ve done, something always felt off. There’s a good chance
+        the problem isn’t you... it’s the promises you’ve been sold.
+
+        Right now, your ideal prospects are scrolling past yet another “too good to be true”
+        claim that sounds exactly like every other one they’ve seen. Deep down, they’ve
+        trained themselves not to believe those promises.
+
+        INTEREST
+
+        **{product_name}** is built to slice through that skepticism.
+
+        {product_desc.strip()}{detail_sentence}
+
+        It works because it speaks directly to what your market already obsesses over most.
+        You’re not begging for attention — you’re joining the conversation in their head.
+
+        In practice, that means you {awareness_angle}. Instead of sounding like everybody else,
+        you become the only obvious choice.
+
+        DESIRE
+
+        Imagine this actually working for you:
+
+        {bullets}
+
+        Each line of copy becomes another little “yes” that stacks in their mind.
+        They stop skimming and start picturing themselves living with the benefits
+        you’re describing.
+
+        ACTION
+
+        If you're serious about {base_benefit_short.lower()} and ready to use copy that finally
+        matches the real value you deliver, this is your move:
+
+        👉 {cta.strip().rstrip('.')}
+
+        {cta_phrase}
+        """
+    ).strip()
+
+    return headlines, sales_copy
+
 
     # --- Defaults from niche if missing ---
     if not audience.strip():
