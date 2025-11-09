@@ -119,7 +119,7 @@ section[data-testid="stSidebar"] * {
 /* Sidebar inspiration video */
 .inspire-video-container {
     text-align: center;
-    margin-top: 6px;
+    margin-top: 12px;
 }
 
 .inspire-video-frame {
@@ -134,8 +134,9 @@ section[data-testid="stSidebar"] * {
 .inspire-caption {
     font-size: 0.7rem;
     color: #cccccc;
-    margin-top: 3px;
-    line-height: 1.2;
+    margin-top: 8px;
+    margin-bottom: 6px;
+    line-height: 1.3;
 }
 
 @keyframes glowpulse {
@@ -284,15 +285,12 @@ def normalize_audience(audience: str) -> str:
     raw_aud = audience.splitlines()[0].strip()
     lowered = raw_aud.lower()
 
-    # Starts nicely already?
     if lowered.startswith(("a ", "an ", "the ")):
         return raw_aud
 
-    # Has 'who' or 'and' -> treat as group description
     if " who " in lowered or " and " in lowered:
         return f"someone like {raw_aud}"
 
-    # Fallback
     if re.match(r"^\d", raw_aud):
         return f"someone aged {raw_aud}"
 
@@ -300,9 +298,6 @@ def normalize_audience(audience: str) -> str:
 
 
 def choose_niche_defaults(niche: str) -> Tuple[str, List[str]]:
-    """
-    Return (audience_line, benefits_list) defaults for a chosen niche.
-    """
     data = NICHE_DEFAULTS.get(niche)
     if not data:
         return (
@@ -319,16 +314,10 @@ def choose_niche_defaults(niche: str) -> Tuple[str, List[str]]:
 
 
 def send_zapier_webhook(url: str, payload: Dict) -> Tuple[bool, str]:
-    """
-    Minimal helper to POST JSON to a Zapier Catch Hook URL.
-    If 'requests' is not available, return a graceful error.
-    """
     if not url:
         return False, "No Zapier URL provided."
-
     if requests is None:
         return False, "The 'requests' library is not available on this server."
-
     try:
         resp = requests.post(url, json=payload, timeout=10)
         return True, f"Webhook sent. HTTP status: {resp.status_code}"
@@ -347,10 +336,6 @@ except ImportError:
 
 
 def call_llm_openai(prompt: str, model: str = "gpt-4o-mini") -> Tuple[bool, str]:
-    """
-    Call OpenAI with a single prompt. Returns (ok, text_or_error).
-    Gracefully handles missing library or missing API key.
-    """
     if openai is None:
         return False, "OpenAI library not installed. Add 'openai' to requirements.txt."
 
@@ -399,17 +384,12 @@ CTA_PHRASES = [
 ]
 
 STRUCTURE_MARKERS = [
-    "attention", "interest", "desire", "action",  # AIDA
-    "problem", "agitate", "solution",            # PAS
+    "attention", "interest", "desire", "action",
+    "problem", "agitate", "solution",
     "guarantee", "testimonial", "proof", "bonus", "faq",
 ]
 
 def analyze_copy_score(copy_text: str) -> Dict[str, float]:
-    """
-    Very rough heuristic scoring from 1–100 on likely conversion strength.
-    This is NOT a true predictive model, just a structured gut-check.
-    """
-
     if not copy_text or not copy_text.strip():
         return {
             "total_score": 0.0,
@@ -424,33 +404,28 @@ def analyze_copy_score(copy_text: str) -> Dict[str, float]:
     words = re.findall(r"\w+", text)
     n_words = len(words)
 
-    # 1) Length score (very rough – ideal 200–1500 words)
     if n_words < 80:
         length_score = 20.0
     elif n_words < 200:
-        length_score = 20 + (n_words - 80) / (200 - 80) * 40  # up to 60
+        length_score = 20 + (n_words - 80) / (200 - 80) * 40
     elif n_words <= 1500:
-        length_score = 60 + min((n_words - 200) / (1500 - 200) * 30, 30)  # up to 90
+        length_score = 60 + min((n_words - 200) / (1500 - 200) * 30, 30)
     else:
         over = min((n_words - 1500) / 1500, 1.0)
-        length_score = 90 - 30 * over  # down to ~60
+        length_score = 90 - 30 * over
 
-    # 2) Emotional trigger score
     lower = text.lower()
     emo_hits = sum(1 for trig in EMOTIONAL_TRIGGERS if trig in lower)
     emo_score = min(emo_hits / 15.0, 1.0) * 100
 
-    # 3) Structure markers (AIDA / PAS / proof cues)
     struct_hits = sum(1 for marker in STRUCTURE_MARKERS if marker in lower)
     struct_score = min(struct_hits / 8.0, 1.0) * 100
 
-    # 4) CTA score
     cta_hits = sum(1 for phrase in CTA_PHRASES if phrase in lower)
     if "http://" in lower or "https://" in lower:
         cta_hits += 1
     cta_score = min(cta_hits / 4.0, 1.0) * 100
 
-    # 5) Specificity: digits, %, $, timeframes
     digits = len(re.findall(r"\d", text))
     percents = len(re.findall(r"\d+%", text))
     dollars = len(re.findall(r"\$", text))
@@ -494,12 +469,6 @@ def generate_rule_based_copy(
     master_style: str,
     niche: str,
 ) -> Tuple[List[str], str]:
-    """
-    Rule-based generator: headlines + sales copy
-    with cleaner benefit phrasing and better audience grammar.
-    """
-
-    # --- Defaults from niche if missing ---
     if not audience.strip():
         niche_aud, _ = choose_niche_defaults(niche)
         audience = niche_aud
@@ -507,7 +476,6 @@ def generate_rule_based_copy(
         _, niche_benefits = choose_niche_defaults(niche)
         benefits_list = niche_benefits
 
-    # --- Benefit cleanup: split "Short benefit (detail)" ---
     raw_base = benefits_list[0].strip()
     base_benefit_short = raw_base
     base_benefit_detail = ""
@@ -528,14 +496,11 @@ def generate_rule_based_copy(
         awareness, "meet them where they are and lead them step-by-step to a decision"
     )
 
-    # --- Audience first line cleanup for headlines ---
     first_aud_line = audience.splitlines()[0].strip() if audience else "your market"
     if re.match(r"^\d", first_aud_line):
         first_aud_line = f"people aged {first_aud_line}"
 
-    # --- Headlines (use short benefit, not full with parentheses) ---
     headlines: List[str] = []
-
     benefit_for_headline = base_benefit_short.capitalize()
 
     headlines.append(
@@ -560,7 +525,6 @@ def generate_rule_based_copy(
             f'Turn "{second}" Into Your Edge With {product_name}'
         )
 
-    # --- CTA Tone by niche ---
     cta_map = {
         "Natural / Alternative Healing": "Because your body was never designed to be at war with itself.",
         "Spirituality & Alternative Beliefs": "Because your soul has been asking for more — this is you answering.",
@@ -574,7 +538,6 @@ def generate_rule_based_copy(
         niche, "Take action now while you’re still thinking about it."
     )
 
-    # --- Emotional intro by master ---
     emotion_intro = {
         "Gary Halbert": "Let’s cut through the noise for a second.",
         "David Ogilvy": "Here’s a fact few advertisers ever admit.",
@@ -656,9 +619,6 @@ def generate_email_sequence(
     awareness: str,
     num_emails: int = 5,
 ) -> List[Dict[str, str]]:
-    """
-    Simple long-form sequence generator: problem -> story -> proof -> offer -> last call.
-    """
     if not benefits_list:
         benefits_list = [
             "get real, measurable results",
@@ -674,7 +634,6 @@ def generate_email_sequence(
 
     sequence: List[Dict[str, str]] = []
 
-    # Email 1
     subject1 = f"[{master_style}] The painful mistake your {product_name} solves"
     body1 = textwrap.dedent(
         f"""
@@ -709,7 +668,6 @@ def generate_email_sequence(
     ).strip()
     sequence.append({"subject": subject1, "body": body1})
 
-    # Email 2
     subject2 = f"That moment when you almost gave up on {main_benefit.lower()}…"
     body2 = textwrap.dedent(
         f"""
@@ -740,7 +698,6 @@ def generate_email_sequence(
     ).strip()
     sequence.append({"subject": subject2, "body": body2})
 
-    # Email 3
     subject3 = f"How {product_name} helps you {main_benefit.lower()} (without the usual grind)"
     body3 = textwrap.dedent(
         f"""
@@ -766,7 +723,6 @@ def generate_email_sequence(
     ).strip()
     sequence.append({"subject": subject3, "body": body3})
 
-    # Email 4
     subject4 = f"Ready to actually {main_benefit.lower()} with {product_name}?"
     body4 = textwrap.dedent(
         f"""
@@ -790,7 +746,6 @@ def generate_email_sequence(
     ).strip()
     sequence.append({"subject": subject4, "body": body4})
 
-    # Email 5
     subject5 = f"Last call: your next shot at {main_benefit.lower()}"
     body5 = textwrap.dedent(
         f"""
@@ -831,10 +786,6 @@ def generate_classified_ads(
     cta: str,
     num_ads: int = 3,
 ) -> List[str]:
-    """
-    Short, punchy classified-style ads tuned to niche + master.
-    """
-
     if not audience.strip():
         audience, _ = choose_niche_defaults(niche)
     aud_short = normalize_audience(audience)
@@ -876,8 +827,245 @@ def generate_classified_ads(
     return template_lines
 
 
+def generate_vsl_webinar_script(
+    product_name: str,
+    product_desc: str,
+    audience: str,
+    benefits_list: List[str],
+    master_style: str,
+    awareness: str,
+    niche: str,
+    script_type: str,
+) -> str:
+    """
+    Generate a VSL or Webinar script skeleton tied to the masters + niche + awareness.
+    """
+
+    if not audience.strip():
+        audience, _ = choose_niche_defaults(niche)
+    aud_short = normalize_audience(audience)
+
+    if not benefits_list:
+        _, niche_benefits = choose_niche_defaults(niche)
+        benefits_list = niche_benefits
+    main_benefit = benefits_list[0]
+    extra_bullets = "\n".join([f"- {b}" for b in benefits_list])
+
+    style_flavor = MASTER_FLAVORS.get(
+        master_style, "direct-response style tuned for conversions"
+    )
+    awareness_angle = AWARENESS_ANGLE.get(
+        awareness, "meet them where they are and lead them step-by-step to a decision"
+    )
+
+    if master_style == "Gary Halbert":
+        hook_line = "Let me start with a simple, slightly uncomfortable truth."
+    elif master_style == "David Ogilvy":
+        hook_line = "If you care about results, the next few minutes deserve your full attention."
+    elif master_style == "Dan Kennedy":
+        hook_line = "I’m not here to entertain you. I’m here to show you how to make more money."
+    elif master_style == "Joe Sugarman":
+        hook_line = "This story starts with something small, almost trivial… and turns into a complete turning point."
+    elif master_style == "Eugene Schwartz":
+        hook_line = "Right now, there is a powerful desire already burning in your market."
+    elif master_style == "John Carlton":
+        hook_line = "Here’s the ugly truth no one else will say out loud."
+    else:
+        hook_line = "Let’s cut through the noise and talk about what actually matters."
+
+    secrets_lines = []
+    for i, b in enumerate(benefits_list[:3]):
+        secrets_lines.append(f"Secret #{i+1}: {b}")
+    secrets_block = "\n".join(secrets_lines)
+
+    if script_type == "VSL Script":
+        script = textwrap.dedent(
+            f"""
+            [VSL SCRIPT – {master_style} style – {niche} – {awareness} awareness]
+
+            SECTION 1 – COLD OPEN HOOK
+
+            {hook_line}
+            If you're {aud_short}, and you want to {main_benefit.lower()}, but you’re sick of
+            hype and half-truths, you’re in exactly the right place.
+
+            In the next few minutes, I’m going to show you a way to {main_benefit.lower()}
+            that {awareness_angle}.
+
+            SECTION 2 – BIG PROMISE & WHAT THEY’LL GET
+
+            Imagine being able to:
+            {extra_bullets}
+
+            That’s what **{product_name}** was built to do.
+
+            By the end of this short video, you’ll know:
+            - What’s really been blocking you from {main_benefit.lower()}
+            - The new mechanism behind {product_name}
+            - Exactly how to get started if it’s right for you
+
+            SECTION 3 – CREDIBILITY / WHY LISTEN TO ME
+
+            Look, I’m not saying this to brag, I’m saying it so you know I didn’t guess.
+            Over the years, I’ve worked with {niche.lower()} offers and {aud_short} just like you,
+            testing what actually moves the needle and what’s just noise.
+
+            {product_desc.strip()}
+
+            SECTION 4 – PROBLEM / AGITATION (PAS)
+
+            The real problem isn’t that you’re lazy, undisciplined, or broken.
+
+            The real problem is that most {niche.lower()} offers:
+            - Over-promise results that almost nobody gets
+            - Hide the work involved
+            - Or use the wrong mechanism for someone like you
+
+            So you try, you push, you invest time and money… and when it doesn’t work,
+            it’s easy to blame yourself instead of the broken system.
+
+            SECTION 5 – THE NEW MECHANISM (YOUR PRODUCT’S CORE IDEA)
+
+            Here’s where **{product_name}** is different.
+
+            Instead of {niche.lower()} being another vague idea, we focus on a concrete mechanism:
+            - What you actually do day to day
+            - Why it works for {aud_short}
+            - How it builds momentum instead of draining you
+
+            SECTION 6 – PROOF ELEMENTS / WHAT IT LOOKS LIKE IN REAL LIFE
+
+            Picture this in your own life:
+
+            {extra_bullets}
+
+            SECTION 7 – THE OFFER (WHAT THEY GET)
+
+            When you say “yes” to **{product_name}**, here’s what you get:
+            - Clear, step-by-step guidance designed for {aud_short}
+            - Tools, templates, or lessons focused on {main_benefit.lower()}
+            - A path that respects your time, energy, and reality
+
+            SECTION 8 – STACK & VALUE JUSTIFICATION
+
+            If all this did was help you {main_benefit.lower()}, would it be worth it?
+
+            What if it also helped you:
+            {extra_bullets}
+
+            That’s why this is an investment, not just another expense.
+
+            SECTION 9 – URGENCY & NEXT STEP
+
+            Here’s what to do next:
+
+            1. Click the main button you see near this video.
+            2. Pick the option that makes sense for you.
+            3. Start the process inside {product_name} and give yourself permission
+               to actually follow through this time.
+
+            Remember: {master_style} style copy is built to sell, not just “educate”.
+            Don’t let this just be interesting. Let it change what you do next.
+            """
+        ).strip()
+    else:
+        script = textwrap.dedent(
+            f"""
+            [WEBINAR SCRIPT – {master_style} style – {niche} – {awareness} awareness]
+
+            SECTION 1 – WELCOME & BIG PROMISE
+
+            “Welcome. You’re in the right place.”
+
+            Today we’re going to talk about how {aud_short} can finally {main_benefit.lower()}
+            without the usual stress, confusion, or burnout.
+
+            My name is [YOUR NAME], and over the next 45–60 minutes, I’m going to show you:
+            - Why most attempts to {main_benefit.lower()} quietly fall apart
+            - The new mechanism behind **{product_name}**
+            - And how you can start applying this immediately, even if you’ve failed before
+
+            SECTION 2 – FRAMING & EXPECTATIONS
+
+            Here’s how this webinar will work:
+            - First, I’ll give you the big picture.
+            - Then I’ll walk you through 3 core “secrets.”
+            - And at the end, if you want more help implementing this,
+              I’ll show you how **{product_name}** works.
+
+            Fair enough? Great.
+
+            SECTION 3 – YOUR STORY / AUTHORITY
+
+            Briefly share:
+            - The moment you realized the old way doesn’t work
+            - The pain, frustration, or fear you went through
+            - The discovery that led to the core idea behind {product_name}
+
+            Tie this back to {aud_short} so they see themselves in your story.
+
+            SECTION 4 – THE 3 SECRETS (CONTENT BODY)
+
+            <Slide: “Secret #1”>
+
+            {secrets_block}
+
+            For each “secret,” explain:
+            - The wrong belief most people have
+            - Why it’s wrong or incomplete
+            - The new belief or mechanism
+            - One concrete example they can picture
+
+            SECTION 5 – TRANSITION FROM CONTENT TO OFFER
+
+            Now, at this point, you have a choice.
+
+            You can take what we covered today and try to piece it together on your own…
+
+            Or, if you’d like help implementing this with a proven structure for
+            {aud_short}, that’s exactly what **{product_name}** was built for.
+
+            SECTION 6 – OFFER PRESENTATION (PRODUCT BREAKDOWN)
+
+            Here’s what you get inside **{product_name}**:
+            {extra_bullets}
+
+            Explain:
+            - Format (videos, PDFs, calls, community, etc.)
+            - Length and pacing
+            - How it fits into their life, not on top of it
+
+            SECTION 7 – STACK, RISK REVERSAL & BONUSES
+
+            Now let’s stack the value:
+
+            - Core program: [Describe the main outcome]
+            - Bonus #1: [Support / templates / checklists]
+            - Bonus #2: [Support / community / live calls]
+            - Guarantee: [Risk reversal or strong reassurance]
+
+            SECTION 8 – CLOSE & CALL TO ACTION
+
+            Remind them:
+            - Who this is for ({aud_short})
+            - What it helps them finally achieve ({main_benefit.lower()})
+            - What happens if they keep doing what they’re doing now
+
+            Then:
+
+            “If you know this is what you’ve been needing, click the button near this
+            webinar window, choose your option, and I’ll see you inside **{product_name}**.”
+
+            And remember: {style_flavor}.
+            This isn’t about information, it’s about a decision that changes what you do next.
+            """
+        ).strip()
+
+    return script
+
+
 # -------------------------
-# UI page helpers
+# UI helpers
 # -------------------------
 
 def render_header():
@@ -932,7 +1120,8 @@ def page_dashboard():
             <p>
             Start on <strong>Generate Copy</strong> to build a long-form sales message,
             then move to <strong>Email Sequences</strong>, the <strong>Classified Ad Writer</strong>,
-            and <strong>A/B Split Tester</strong> to light up your cold traffic from every angle.
+            <strong>VSL & Webinar Scripts</strong> and the <strong>A/B Split Tester</strong>
+            to light up your cold traffic from every angle.
             </p>
             </div>
             """,
@@ -948,7 +1137,7 @@ def page_dashboard():
                 <li>Go to <strong>🧠 Generate Copy</strong> and fill in your offer brief.</li>
                 <li>Pick your niche & master style (Halbert, Ogilvy, Kennedy, etc.).</li>
                 <li>Generate headlines + sales copy.</li>
-                <li>Turn that into an email sequence and classifieds.</li>
+                <li>Turn that into an email sequence, VSL script, and classifieds.</li>
                 <li>Use <strong>Traffic & Networks</strong> for offers and clicks.</li>
                 <li>Use <strong>A/B Split Tester</strong> & <strong>Analytics</strong> to judge what wins.</li>
             </ol>
@@ -1076,7 +1265,6 @@ def page_generate_copy():
     st.markdown("### 📜 Sales Copy Draft")
     st.markdown(sales_copy)
 
-    # Heuristic conversion score for this draft
     st.markdown("---")
     st.markdown("### 🔍 Conversion Potential (Heuristic Score)")
 
@@ -1097,7 +1285,6 @@ def page_generate_copy():
         "Always test in the real world — the market is the final judge."
     )
 
-    # --- Optional AI enhancement ---
     st.markdown("---")
     st.markdown("### 🧠 Smart Rewrite (AI-Enhanced)")
 
@@ -1239,6 +1426,101 @@ def page_email_sequences():
     st.caption(
         "Sugarman reminder: each line’s job is to get the next line read. "
         "Use curiosity and story to keep them moving."
+    )
+
+
+def page_vsl_webinar():
+    render_header()
+    st.subheader("🎥 VSL & Webinar Scripts")
+
+    st.markdown(
+        """
+        Generate long-form VSL or webinar scripts inspired by the masters:
+        Halbert, Ogilvy, Kennedy, Sugarman, Schwartz, Carlton, Abraham, and more.
+        These scripts follow proven structures: hook, problem, mechanism, proof, offer, and CTA.
+        """
+    )
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        script_type = st.selectbox(
+            "Script Type",
+            ["VSL Script", "Webinar Script"],
+            index=0,
+        )
+    with col2:
+        niche = st.selectbox(
+            "Primary Niche",
+            list(NICHE_DEFAULTS.keys()),
+            index=0,
+        )
+    with col3:
+        master_style = st.selectbox(
+            "Master Style Influence",
+            list(MASTER_FLAVORS.keys()),
+            index=0,
+        )
+
+    st.markdown("---")
+
+    with st.form("vsl_webinar_form"):
+        product_name = st.text_input("Product / Offer Name", "")
+        product_desc = st.text_area(
+            "Product / Offer Description",
+            "",
+            placeholder="What is it? What do they get? How does it work?",
+        )
+        audience = st.text_area(
+            "Target Audience",
+            "",
+            placeholder="Example: preppers and families who want to be ready when things go wrong…",
+        )
+
+        benefits_text = st.text_area(
+            "Core Benefits (one per line)",
+            "",
+            placeholder="Example:\nProtect your family when systems fail\nHave food/water when others panic\nSleep better knowing you’re prepared",
+        )
+
+        awareness = st.selectbox(
+            "Audience Awareness Level",
+            ["Unaware", "Problem-aware", "Solution-aware", "Product-aware", "Most-aware"],
+            index=2,
+        )
+
+        submitted = st.form_submit_button("🎬 Generate Script")
+
+    if not submitted:
+        st.info("Fill out the fields and click **Generate Script**.")
+        return
+
+    if not product_name or not product_desc:
+        st.error("Please add at least a product name and description.")
+        return
+
+    benefits_list = [
+        line.strip()
+        for line in benefits_text.splitlines()
+        if line.strip()
+    ]
+
+    script = generate_vsl_webinar_script(
+        product_name=product_name,
+        product_desc=product_desc,
+        audience=audience,
+        benefits_list=benefits_list,
+        master_style=master_style,
+        awareness=awareness,
+        niche=niche,
+        script_type=script_type,
+    )
+
+    st.markdown("### 📜 Script Draft")
+    st.text(script)
+
+    st.caption(
+        "Use this as your base: record it as a VSL, or turn each section into slides for a webinar. "
+        "Layer on visuals, testimonials, and B-roll that match the emotion of each section."
     )
 
 
@@ -1814,7 +2096,6 @@ def page_copy_analyzer():
                 "Use this to spot obvious weak spots. For example, low emotional triggers or no clear CTA usually means low response."
             )
 
-            # Optional AI critique
             if st.checkbox("🧠 Get AI Critique (OpenAI)", value=False):
                 prompt = f"""
                 You are a world-class direct-response copywriter.
@@ -1988,7 +2269,6 @@ def page_settings_integrations():
 # -------------------------
 
 def main():
-    # --- SIDEBAR ---
     with st.sidebar:
         st.markdown(
             """
@@ -2005,6 +2285,7 @@ def main():
                 "Dashboard",
                 "Generate Copy",
                 "Email Sequences",
+                "VSL & Webinar Scripts",
                 "Classified Ad Writer",
                 "Manual & Lead Magnet",
                 "Traffic & Networks",
@@ -2026,10 +2307,10 @@ def main():
                     class="inspire-video-frame"
                     width="220"
                     height="124"
-                    src="https://www.youtube.com/embed/IN2H8U9Zr3k?autoplay=0&loop=1&playlist=IN2H8U9Zr3k"
+                    src="https://www.youtube.com/embed/IN2H8U9Zr3k?autoplay=1&mute=1&loop=1&playlist=IN2H8U9Zr3k"
                     title="The Strangest Secret by Earl Nightingale"
                     frameborder="0"
-                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen
                 ></iframe>
                 <p class="inspire-caption">
@@ -2041,13 +2322,14 @@ def main():
             unsafe_allow_html=True,
         )
 
-    # --- MAIN AREA ---
     if page == "Dashboard":
         page_dashboard()
     elif page == "Generate Copy":
         page_generate_copy()
     elif page == "Email Sequences":
         page_email_sequences()
+    elif page == "VSL & Webinar Scripts":
+        page_vsl_webinar()
     elif page == "Classified Ad Writer":
         page_classified_writer()
     elif page == "Manual & Lead Magnet":
@@ -2065,7 +2347,6 @@ def main():
     elif page == "Settings & Integrations":
         page_settings_integrations()
 
-    # Global footer
     st.markdown(
         """
         <div class="illuminati-footer">
