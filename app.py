@@ -105,15 +105,25 @@ def generate_with_gemini(prompt: str) -> str:
 
     if genai is None:
         raise RuntimeError("google-generativeai library is not installed.")
-        
 
     genai.configure(api_key=api_key)
 
+    # First try a newer model, then gracefully fall back if unsupported
+    last_error = None
+    for model_name in ["gemini-1.5-flash", "gemini-pro"]:
+        try:
+            model = genai.GenerativeModel(model_name)
+            resp = model.generate_content(prompt)
+            text = getattr(resp, "text", "") or ""
+            if text.strip():
+                return text.strip()
+        except Exception as e:
+            last_error = e
+            continue
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-1.5-flash")
-    resp = model.generate_content(prompt)
-    return (resp.text or "").strip()
+    # If we tried all fallbacks and still failed, surface the last error
+    raise RuntimeError(f"Gemini generation failed after trying multiple models: {last_error}")
+
 
 
 def generate_rule_based_copy(
