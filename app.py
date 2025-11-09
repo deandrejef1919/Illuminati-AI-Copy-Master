@@ -21,7 +21,8 @@ st.set_page_config(
 )
 
 # --- Sidebar Navigation ---
-st.sidebar.markdown("### 🔺 Illuminati AI Copy Master")
+st.sidebar.markdown("### 🔺 Illuminati 
+AI Copy Master")
 st.sidebar.caption("Strategic Copy & Traffic Command Console")
 
 page = st.sidebar.radio(
