@@ -1,4 +1,4 @@
-# 🔺 Illuminati AI Copy Master – Full App
+# 🔺 Illuminati AI Copy Master – Full App with Email Sequences
 # Author: DeAndre Jefferson
 
 import streamlit as st
@@ -33,11 +33,9 @@ if "gemini_api_key" not in st.session_state:
     st.session_state["gemini_api_key"] = ""
 
 if "checklist_presets" not in st.session_state:
-    # name -> {key: bool}
     st.session_state["checklist_presets"] = {}
 
 if "campaign_history" not in st.session_state:
-    # list of dicts with metrics
     st.session_state["campaign_history"] = []
 
 # --- Sidebar Navigation ---
@@ -49,6 +47,7 @@ page = st.sidebar.radio(
     [
         "Dashboard",
         "Generate Copy",
+        "Email Sequences",
         "Classified Ad Writer",
         "Manual & Assets",
         "System Checklist",
@@ -61,7 +60,6 @@ page = st.sidebar.radio(
 
 
 def get_openai_key():
-    """Get OpenAI API key from Streamlit secrets or session."""
     if "OPENAI_API_KEY" in st.secrets:
         return st.secrets["OPENAI_API_KEY"]
     key = st.session_state.get("openai_api_key", "").strip()
@@ -69,7 +67,6 @@ def get_openai_key():
 
 
 def get_gemini_key():
-    """Get Gemini API key from Streamlit secrets or session."""
     if "GEMINI_API_KEY" in st.secrets:
         return st.secrets["GEMINI_API_KEY"]
     key = st.session_state.get("gemini_api_key", "").strip()
@@ -77,7 +74,6 @@ def get_gemini_key():
 
 
 def generate_with_openai(prompt: str) -> str:
-    """Call OpenAI with a chat-style prompt. Returns text or raises an Exception."""
     api_key = get_openai_key()
     if not api_key:
         raise RuntimeError("No OpenAI API key found in secrets or session.")
@@ -101,7 +97,6 @@ def generate_with_openai(prompt: str) -> str:
 
 
 def generate_with_gemini(prompt: str) -> str:
-    """Call Gemini with a prompt. Returns text or raises an Exception."""
     api_key = get_gemini_key()
     if not api_key:
         raise RuntimeError("No Gemini API key found in secrets or session.")
@@ -136,13 +131,10 @@ def generate_rule_based_copy(
     awareness,
     master_style,
 ):
-    """Local, no-API rule-based generator for headlines and sales copy."""
-
     base_benefit = (
         benefits_list[0] if benefits_list else "get better results with less effort and stress"
     )
 
-    # Awareness angle
     if awareness == "Unaware":
         awareness_angle = (
             "lead with curiosity and a bold, intriguing promise that wakes them up."
@@ -157,7 +149,7 @@ def generate_rule_based_copy(
         awareness_angle = (
             "stack proof, specifics, and reasons to act today with your product."
         )
-    else:  # Most-aware
+    else:
         awareness_angle = (
             "reinforce the offer, sweeten the deal, and remove every ounce of risk."
         )
@@ -177,7 +169,6 @@ def generate_rule_based_copy(
         "Hybrid Mix": "a blend of classic direct response aggression and modern conversion copy.",
     }.get(master_style, "classic direct response flavor.")
 
-    # short audience to avoid dumping full avatar blocks
     if isinstance(audience, str) and audience.strip():
         audience_short = audience.splitlines()[0].strip()
     else:
@@ -185,24 +176,20 @@ def generate_rule_based_copy(
 
     headlines = []
 
-    # 1. Benefit + without pain
     headlines.append(
         f"{base_benefit} — without the usual "
         f"{'stress' if 'without' not in base_benefit.lower() else 'roadblocks'}"
     )
 
-    # 2. How to + benefit
     headlines.append(
         f"How to {base_benefit.lower()} with {product_name} "
         "(Even If You Feel You've Tried Everything)"
     )
 
-    # 3. Curiosity / shortcut
     headlines.append(
         f"The {product_name} Shortcut That Quietly Turns Cold Traffic into Buyers"
     )
 
-    # 4. Direct offer to audience
     first_audience_line = (
         audience.splitlines()[0] if audience else "ambitious entrepreneurs"
     )
@@ -210,19 +197,16 @@ def generate_rule_based_copy(
         f"New for {first_audience_line}: {product_name} That Finally Makes Your Traffic Pay"
     )
 
-    # 5. Ultra-specific style
     headlines.append(
         f"Use {product_name} to {base_benefit.lower()} in the Next 30 Days... Or Less"
     )
 
-    # 6. Optional extra hybrid
     if len(benefits_list) > 1:
         second_benefit = benefits_list[1]
         headlines.append(
             f"Turn {second_benefit.lower()} into your unfair advantage with {product_name}"
         )
 
-    # Bullet list
     bullets = (
         "".join([f"- {b}\n" for b in benefits_list])
         if benefits_list
@@ -260,6 +244,251 @@ If you're serious about {base_benefit.lower()} and ready to use copy that finall
     return headlines, sales_copy
 
 
+def generate_rule_based_email_sequence(
+    product_name: str,
+    product_desc: str,
+    audience: str,
+    benefits_list,
+    cta: str,
+    goal: str,
+    seq_type: str,
+    master_style: str,
+    num_emails: int,
+    tone: str,
+):
+    """Simple rule-based email sequence generator with master-style flavor."""
+    if isinstance(audience, str) and audience.strip():
+        audience_short = audience.splitlines()[0].strip()
+    else:
+        audience_short = "people who need this solution"
+
+    main_benefit = benefits_list[0] if benefits_list else "get better results with less effort"
+    extra_benefit = benefits_list[1] if len(benefits_list) > 1 else main_benefit
+
+    style_note = {
+        "Gary Halbert": "Expect drama, storytelling, and emotional hooks.",
+        "David Ogilvy": "Expect clarity, specifics, and strong benefits.",
+        "Dan Kennedy": "Expect no-BS, money/results-focused messaging.",
+        "Joe Sugarman": "Expect curiosity and slippery-slide storytelling.",
+        "Eugene Schwartz": "Expect awareness-based buildup of desire.",
+        "John Carlton": "Expect punchy, conversational, street-smart lines.",
+        "Jay Abraham": "Expect preeminence and value stacking.",
+        "Robert Bly": "Expect clear structure and practical benefits.",
+        "Neville Medhora": "Expect short, fun, human-sounding emails.",
+        "Joanna Wiebe": "Expect voice-of-customer-driven, sharp microcopy.",
+        "Hybrid Mix": "Expect a balanced blend of old-school and modern persuasion.",
+    }.get(master_style, "Classic direct response tone.")
+
+    if "launch" in seq_type.lower():
+        archetype = "launch"
+    elif "welcome" in seq_type.lower():
+        archetype = "welcome"
+    elif "nurture" in seq_type.lower():
+        archetype = "nurture"
+    elif "re-engage" in seq_type.lower() or "reengage" in seq_type.lower():
+        archetype = "reengage"
+    else:
+        archetype = "generic"
+
+    emails = []
+
+    for i in range(1, num_emails + 1):
+        if archetype == "welcome":
+            if i == 1:
+                subject = f"Welcome – here’s your {product_name} insider advantage"
+                body = f"""Hey there,
+
+Thanks for joining us. If you're like most {audience_short}, you've been looking for a simple way to {main_benefit.lower()}.
+
+{product_name} was built for exactly that.
+
+In the next few days, I'll show you how to:
+- {main_benefit}
+- {extra_benefit}
+- Turn what you already know into real results
+
+For now, take 30 seconds and {cta.strip().rstrip('.')}.
+"""
+            elif i == 2:
+                subject = f"The big problem nobody told {audience_short} about"
+                body = f"""Hey,
+
+Let’s talk about the real problem.
+
+Most {audience_short.lower()} don’t fail because they’re lazy. They fail because nobody gave them a simple, proven path.
+
+That’s what {product_name} gives you:
+- Clarity on what actually matters
+- A step-by-step way to use it
+- Confidence that you’re not guessing anymore
+
+If that sounds like what you’ve been missing, {cta.strip().rstrip('.')}.
+"""
+            else:
+                subject = f"Quick win: one simple move to {main_benefit.lower()}"
+                body = f"""Hey,
+
+Here’s a quick win for you:
+
+Pick just one tiny piece of {product_name} and put it into action today.
+Don’t wait for “perfect” – just start.
+
+You’ll be shocked at how fast small moves add up.
+
+When you’re ready to lean in fully, {cta.strip().rstrip('.')}.
+"""
+        elif archetype == "launch":
+            if i == 1:
+                subject = f"NEW: {product_name} is live – built for {audience_short}"
+                body = f"""Hey,
+
+This is the first time I’m opening up {product_name} to {audience_short}.
+
+If you’ve ever wanted to {main_benefit.lower()} without the usual frustration and guesswork,
+this is your early chance.
+
+Right now, you can:
+- Be among the first to use it
+- Lock in early pricing
+- Start seeing results before everyone else
+
+Get the full story and details here:
+{cta.strip().rstrip('.')}.
+"""
+            elif i == 2:
+                subject = f"The real reason {audience_short} struggle with {goal.lower()}"
+                body = f"""Hey,
+
+Let’s be blunt.
+
+Most {audience_short.lower()} are stuck because they’re trying to fix the wrong problem.
+
+{product_name} attacks the real issue:
+- It simplifies your path to {main_benefit.lower()}
+- It shows you exactly what to do next
+- It turns “someday” into a concrete plan
+
+This window won’t stay open forever.
+{cta.strip().rstrip('.')}.
+"""
+            elif i == num_emails:
+                subject = f"Last call: {product_name} {goal} window closing"
+                body = f"""Hey,
+
+This is your last reminder.
+
+The current opportunity for {product_name} is closing, and once it does, you’ll either:
+- Have taken your shot, or
+- Be watching others get results while you’re still “thinking about it.”
+
+If {main_benefit.lower()} matters to you, do this now:
+{cta.strip().rstrip('.')}.
+"""
+            else:
+                subject = f"See {product_name} in action (real-world benefits)"
+                body = f"""Hey,
+
+Quick snapshot of what {product_name} can do for you:
+
+Imagine waking up knowing exactly how to {main_benefit.lower()}, without wondering what to try next.
+Imagine having a clear, simple path laid out for you.
+
+That’s what this was built for.
+
+See it laid out here:
+{cta.strip().rstrip('.')}.
+"""
+        elif archetype == "reengage":
+            if i == 1:
+                subject = f"Still interested in {main_benefit.lower()}?"
+                body = f"""Hey,
+
+You grabbed information about {product_name} before, but never fully jumped in.
+
+Totally normal.
+
+If {main_benefit.lower()} is still important to you, now’s a good time to take another look.
+
+Here’s the direct link:
+{cta.strip().rstrip('.')}.
+"""
+            else:
+                subject = f"If you’re still reading this, here’s your next move"
+                body = f"""Hey,
+
+The fact that you’re opening this email tells me you still care about {main_benefit.lower()}.
+
+You don’t need more noise… you need one clear action.
+
+Here it is:
+{cta.strip().rstrip('.')}.
+"""
+        else:  # nurture / generic
+            if i == 1:
+                subject = f"What every {audience_short} should know about {main_benefit.lower()}"
+                body = f"""Hey,
+
+If you’re like most {audience_short}, you’ve been promised the world and given almost nothing.
+
+{product_name} is different because:
+- It focuses on {main_benefit.lower()}
+- It respects your time
+- It gives you a clear, usable process
+
+In the next emails, I’ll show you how to think about {goal.lower()} like the top {master_style} style marketers would.
+
+For now, take a look at what’s possible:
+{cta.strip().rstrip('.')}.
+"""
+            elif i == 2:
+                subject = f"The “quiet” mistake that kills {goal.lower()}"
+                body = f"""Hey,
+
+There’s a mistake almost nobody talks about.
+
+Most people try to fix {goal.lower()} by adding more complexity:
+more tools, more tricks, more hacks.
+
+{product_name} flips that on its head by stripping things down to what actually works.
+
+If you want less noise and more results, start here:
+{cta.strip().rstrip('.')}.
+"""
+            else:
+                subject = f"Ready to {main_benefit.lower()} the smarter way?"
+                body = f"""Hey,
+
+You don’t need another theory.
+
+You need something that’s:
+- Simple
+- Proven
+- Built for {audience_short.lower()}
+
+That’s what {product_name} was designed to be.
+
+Check it out while it’s still fresh in your mind:
+{cta.strip().rstrip('.')}.
+"""
+
+        emails.append({"index": i, "subject": subject, "body": body.strip()})
+
+    output_lines = []
+    output_lines.append(f"[{master_style}-inspired email sequence] ({seq_type}, {goal})")
+    output_lines.append(f"Tone: {tone}")
+    output_lines.append(f"Style note: {style_note}")
+    output_lines.append("")
+
+    for e in emails:
+        output_lines.append(f"Email {e['index']}:")
+        output_lines.append(f"Subject: {e['subject']}")
+        output_lines.append("")
+        output_lines.append(e["body"])
+        output_lines.append("\n" + "-" * 40 + "\n")
+
+    return "\n".join(output_lines)
+
+
 # --- Dashboard Page ---
 def page_dashboard():
     st.title("🔺 Illuminati AI Copy Master")
@@ -270,14 +499,15 @@ def page_dashboard():
 Welcome to **Illuminati AI Copy Master** — your all-in-one hub for:
 
 - Legendary copywriting frameworks (Ogilvy, Halbert, Kennedy & more)  
-- AI-enhanced generation for headlines, sales letters, and funnels  
+- AI-enhanced generation for headlines, sales letters, **email sequences**, and classifieds  
 - Built-in manual & asset generator (PDF + ZIP)  
 
 ---
 Use the navigation on the left to access:
 - **Dashboard** – overview  
-- **Generate Copy** – rule-based + AI engines  
-- **Classified Ad Writer** – short-form classified ads  
+- **Generate Copy** – long-form sales copy & headlines  
+- **Email Sequences** – full campaigns based on the masters  
+- **Classified Ad Writer** – short ads for free/paid classifieds  
 - **Manual & Assets** – Illuminati AI manual package  
 - **System Checklist** – launch checklist with presets  
 - **Traffic & Networks** – traffic sources & quick analyzer + history  
@@ -290,7 +520,6 @@ Use the navigation on the left to access:
 def page_generate_copy():
     st.header("🧠 Generate Copy")
 
-    # Default engine from session, but allow per-run override
     default_engine = st.session_state.get("engine_mode", "Rule-based")
     engine_choice = st.selectbox(
         "Engine",
@@ -360,10 +589,8 @@ def page_generate_copy():
         st.error("Please provide at least a product name and description.")
         return
 
-    # Split benefits
     benefits_list = [b.strip() for b in benefits_text.split("\n") if b.strip()]
 
-    # Build the base prompt used by OpenAI/Gemini
     prompt = f"""
 You are a legendary direct response copywriter channeling the combined wisdom of:
 
@@ -418,7 +645,6 @@ OUTPUT:
 Write the headlines clearly numbered, then the full sales copy below.
 """.strip()
 
-    # --- Rule-based Engine ---
     if engine_choice == "Rule-based":
         headlines, sales_copy = generate_rule_based_copy(
             product_name=product_name,
@@ -438,7 +664,6 @@ Write the headlines clearly numbered, then the full sales copy below.
         st.code(sales_copy, language="markdown")
         return
 
-    # --- OpenAI Engine ---
     if engine_choice == "OpenAI":
         try:
             ai_text = generate_with_openai(prompt)
@@ -466,7 +691,6 @@ Write the headlines clearly numbered, then the full sales copy below.
             st.code(sales_copy, language="markdown")
             return
 
-    # --- Gemini Engine ---
     if engine_choice == "Gemini":
         try:
             ai_text = generate_with_gemini(prompt)
@@ -494,6 +718,206 @@ Write the headlines clearly numbered, then the full sales copy below.
             st.markdown("---")
             st.markdown("### 📜 Sales Copy Draft (Rule-based fallback)")
             st.code(sales_copy, language="markdown")
+            return
+
+
+# --- Email Sequences Page ---
+def page_email_sequences():
+    st.header("📨 Email Sequences (Masters-Inspired)")
+
+    st.markdown(
+        """
+Build complete email sequences influenced by the greats:
+
+- Halbert launch flurries  
+- Ogilvy-style onboarding and education  
+- Kennedy-style money-talk sequences  
+- Sugarman / Schwartz style curiosity + desire ramps  
+
+You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
+"""
+    )
+
+    default_engine = st.session_state.get("engine_mode", "Rule-based")
+    engine_choice = st.selectbox(
+        "Engine",
+        ["Rule-based", "OpenAI", "Gemini"],
+        index=["Rule-based", "OpenAI", "Gemini"].index(default_engine),
+        help="Rule-based uses templates. OpenAI / Gemini use external AI models.",
+    )
+    st.session_state["engine_mode"] = engine_choice
+
+    with st.form("email_sequence_form"):
+        product_name = st.text_input("Product / Service Name", "")
+        product_desc = st.text_area("Product / Service Description", "")
+        audience = st.text_area(
+            "Target Audience (who are these emails going to?)", ""
+        )
+        benefits_text = st.text_area(
+            "Key Benefits (one per line)",
+            placeholder="E.g.\nLose 10 lbs without starving\nWork from home part-time\nGet more leads without cold calling",
+        )
+        goal = st.text_input(
+            "Sequence Goal (e.g. sell main offer, book call, register for webinar)",
+            "Sell the main offer",
+        )
+        cta = st.text_input(
+            "Call to Action (plain text - link or instruction)",
+            "Click here to get started",
+        )
+        tone = st.selectbox(
+            "Tone",
+            [
+                "Direct & No-BS",
+                "Friendly & Conversational",
+                "High-End / Premium",
+                "Urgent & Hypey",
+                "Calm & Reassuring",
+            ],
+            index=0,
+        )
+        seq_type = st.selectbox(
+            "Sequence Type",
+            [
+                "Welcome / Indoctrination",
+                "Launch / Open Cart",
+                "Nurture / Value-First",
+                "Re-engagement / Win-back",
+                "Generic Promo Sequence",
+            ],
+            index=1,
+        )
+        master_style = st.selectbox(
+            "Master Style Influence",
+            [
+                "Gary Halbert",
+                "David Ogilvy",
+                "Dan Kennedy",
+                "Claude Hopkins",
+                "Joe Sugarman",
+                "Eugene Schwartz",
+                "John Carlton",
+                "Jay Abraham",
+                "Robert Bly",
+                "Neville Medhora",
+                "Joanna Wiebe",
+                "Hybrid Mix",
+            ],
+            index=0,
+        )
+        num_emails = st.slider(
+            "Number of emails in the sequence", min_value=3, max_value=10, value=5
+        )
+
+        submitted = st.form_submit_button("📨 Generate Email Sequence")
+
+    if not submitted:
+        st.info("Fill out the brief and click **Generate Email Sequence**.")
+        return
+
+    if not product_name or not product_desc or not cta:
+        st.error("Please provide at least a product name, description, and CTA.")
+        return
+
+    benefits_list = [b.strip() for b in benefits_text.split("\n") if b.strip()]
+
+    if engine_choice == "Rule-based":
+        seq_text = generate_rule_based_email_sequence(
+            product_name=product_name,
+            product_desc=product_desc,
+            audience=audience,
+            benefits_list=benefits_list,
+            cta=cta,
+            goal=goal,
+            seq_type=seq_type,
+            master_style=master_style,
+            num_emails=num_emails,
+            tone=tone,
+        )
+        st.markdown("### 🧬 Rule-based Email Sequence Draft")
+        st.code(seq_text, language="markdown")
+        return
+
+    ai_prompt = f"""
+You are a legendary direct response email copywriter, channeling:
+
+- Gary Halbert
+- David Ogilvy
+- Claude Hopkins
+- Joe Sugarman
+- Eugene Schwartz
+- John Carlton
+- Dan Kennedy
+- Jay Abraham
+- Robert Bly
+- Joanna Wiebe
+- Neville Medhora
+
+Write primarily in the style of: {master_style}.
+
+TASK:
+Write a {num_emails}-email sequence for this offer.
+
+Each email must:
+- Start with a compelling subject line
+- Have a clear body (short paragraphs, scannable)
+- Match this tone: {tone}
+- Aim at this sequence goal: {goal}
+- End with this call to action: "{cta}"
+
+CONTEXT:
+
+Product / Service Name:
+{product_name}
+
+Description:
+{product_desc}
+
+Target Audience:
+{audience}
+
+Key Benefits:
+{benefits_text}
+
+Sequence Type:
+{seq_type}
+
+OUTPUT FORMAT (IMPORTANT):
+
+Email 1:
+Subject: ...
+Body:
+...
+
+Email 2:
+Subject: ...
+Body:
+...
+
+(Continue up to Email {num_emails})
+""".strip()
+
+    if engine_choice == "OpenAI":
+        try:
+            ai_text = generate_with_openai(ai_prompt)
+            st.markdown("### 🤖 OpenAI Email Sequence")
+            st.markdown(ai_text)
+            return
+        except Exception as e:
+            st.error(f"OpenAI email sequence generation failed: {e}")
+            return
+
+    if engine_choice == "Gemini":
+        try:
+            ai_text = generate_with_gemini(ai_prompt)
+            st.markdown("### 🤖 Gemini Email Sequence")
+            st.markdown(ai_text)
+            return
+        except Exception:
+            st.warning(
+                "Gemini is currently not available from this environment (model 404s). "
+                "Switch to Rule-based or OpenAI for email sequences."
+            )
             return
 
 
@@ -585,7 +1009,6 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
         )
         return
 
-    # Shared helpers
     benefits_list = [b.strip() for b in benefits_text.split("\n") if b.strip()]
     audience_short = (
         audience.splitlines()[0].strip()
@@ -602,7 +1025,6 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
     )
     second_benefit = benefits_list[1] if len(benefits_list) > 1 else None
 
-    # style hint (for AI engines)
     if master_style == "Gary Halbert":
         style_hint = "emotional, direct-mail style with a strong hook and clear self-interest."
     elif master_style == "David Ogilvy":
@@ -620,7 +1042,6 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
     else:
         style_hint = "classic direct response style adapted for short classified ads."
 
-    # RULE-BASED CLASSIFIED ADS
     if engine_choice == "Rule-based":
         ads = []
 
@@ -628,7 +1049,6 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
             pattern_type = i % 3
 
             if pattern_type == 0:
-                # Halbert-style: bold benefit + curiosity
                 headline = f"{base_benefit} – {product_name}"
                 body_lines = [
                     desc_short,
@@ -636,7 +1056,6 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
                     contact,
                 ]
             elif pattern_type == 1:
-                # Ogilvy-style: specific, clean promise
                 benefit_line = second_benefit or base_benefit
                 headline = f"{product_name}: {benefit_line}"
                 body_lines = [
@@ -645,7 +1064,6 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
                     contact,
                 ]
             else:
-                # Kennedy-style: direct offer + urgency
                 headline = f"{product_name} – Limited Spots for {audience_short}"
                 body_lines = [
                     desc_short,
@@ -665,7 +1083,6 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
 
         return
 
-    # AI-POWERED CLASSIFIED ADS
     prompt = f"""
 You are a legendary direct response copywriter specializing in short classified ads,
 channeling the style of {master_style}.
@@ -760,7 +1177,7 @@ Click the button below to generate the package.
     if st.button("🔺 Forge The Manual of Persuasion"):
         with st.spinner("Forging the manual and ZIP package..."):
             generate_illuminati_package_main()
-        st.success("✅ The manual package has been forged successfully.")
+        st.success("🔺 The manual package has been forged successfully.")
 
         zip_path = "Illuminati_AI_Package.zip"
         if os.path.exists(zip_path):
@@ -855,7 +1272,6 @@ Each item helps make sure:
             "All checklist items complete. You’re ready to carefully test and scale traffic."
         )
 
-    # Preset Save/Load
     st.markdown("---")
     st.markdown("### 💾 Checklist Presets (this session only)")
 
@@ -930,7 +1346,6 @@ Always double-check each platform’s current policies and terms — they can ch
         ]
     )
 
-    # Affiliate Networks
     with tabs[0]:
         st.subheader("🌐 Affiliate Networks (Generally Easy to Join)")
         st.markdown(
@@ -952,7 +1367,6 @@ Always review their current rules and verticals allowed.
             "Use these to find offers that match your list, niche, or funnel theme. Start with a small test."
         )
 
-    # Banner & Solo Ad Networks
     with tabs[1]:
         st.subheader("📢 Banner & Solo Ad Traffic (Lower Barrier Platforms)")
 
@@ -984,7 +1398,6 @@ Always review their current rules and verticals allowed.
             "Avoid banned content and always follow their policies."
         )
 
-    # Free Classified Sites
     with tabs[2]:
         st.subheader("📋 Free Classified Ad Sites (High or Notable Traffic)")
         st.markdown(
@@ -1007,7 +1420,6 @@ Use short, direct ads with a clear benefit and a single next step (click, call, 
             "Write like a human local marketer, not a spam bot. Keep claims realistic and truthful."
         )
 
-    # Quick Campaign Analyzer + History
     with tabs[3]:
         st.subheader("📊 Quick Campaign Analyzer")
 
@@ -1195,6 +1607,8 @@ if page == "Dashboard":
     page_dashboard()
 elif page == "Generate Copy":
     page_generate_copy()
+elif page == "Email Sequences":
+    page_email_sequences()
 elif page == "Classified Ad Writer":
     page_classified_writer()
 elif page == "Manual & Assets":
