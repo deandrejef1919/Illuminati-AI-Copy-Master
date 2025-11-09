@@ -244,8 +244,7 @@ def page_dashboard():
     - **Generate Copy** – copy engine (coming soon)  
     - **Manual & Assets** – generate your Illuminati AI manual package  
     - **System Checklist** – launch checklist  
-    - **Settings & Integrations** – configure engine mode & API keys  
-    """)
+    - **Settings & Integrations** – configure engine mode & API keys""")
     def page_generate_copy():
     st.header("🧠 Generate Copy")
 
