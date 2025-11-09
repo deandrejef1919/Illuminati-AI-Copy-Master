@@ -699,25 +699,19 @@ Body: ...
 (Continue up to {num_ads})
 """.strip()
 
-    if engine_choice == "OpenAI":
-        try:
-            ai_text = generate_with_openai(prompt)
-        except Exception as e:
-            st.error(f"OpenAI classified ad generation failed: {e}")
-            return
-        st.markdown("### 🤖 OpenAI Classified Ads")
-        st.markdown(ai_text)
-        return
-
-    if engine_choice == "Gemini":
+        if engine_choice == "Gemini":
         try:
             ai_text = generate_with_gemini(prompt)
-        except Exception as e:
-            st.error(f"Gemini classified ad generation failed: {e}")
+            st.markdown("### 🤖 Gemini Classified Ads")
+            st.markdown(ai_text)
             return
-        st.markdown("### 🤖 Gemini Classified Ads")
-        st.markdown(ai_text)
-        return
+        except Exception:
+            st.warning(
+                "Gemini is currently not available from this environment (model 404s). "
+                "Switch to Rule-based or OpenAI for classified ads."
+            )
+            return
+
 
 
     # AI-POWERED CLASSIFIED ADS
