@@ -471,12 +471,24 @@ def generate_rule_based_copy(
         "Hybrid Mix": "a blend of classic direct response aggression and modern conversion copy.",
     }.get(master_style, "classic direct response flavor.")
 
-  if isinstance(audience, str) and audience.strip():
+  # --- Audience grammar patch ---
+if isinstance(audience, str) and audience.strip():
     raw_aud = audience.splitlines()[0].strip()
-    # Simple grammar patch: if it doesn't start with "a", "an", or "the", add "someone who is"
     lowered = raw_aud.lower()
+
+    # Case 1: Already starts naturally
+    # e.g. "a busy parent...", "an online entrepreneur...", "the serious prepper..."
     if lowered.startswith(("a ", "an ", "the ")):
         audience_short = raw_aud
+
+    # Case 2: Complex phrase with "who" or "and"
+    # e.g. "preppers and families who want to be ready when things go wrong"
+    # -> "someone like preppers and families who want to be ready when things go wrong"
+    elif " who " in lowered or " and " in lowered:
+        audience_short = f"someone like {raw_aud}"
+
+    # Case 3: Simple description
+    # e.g. "tired of yo-yo dieting" -> "someone who is tired of yo-yo dieting"
     else:
         audience_short = f"someone who is {raw_aud}"
 else:
@@ -488,8 +500,6 @@ ATTENTION
 
 If you're {audience_short}, there's a good chance the problem is not you...
 it's the message you're putting in front of your market.
-"""
-
 
 INTEREST
 
@@ -511,6 +521,7 @@ If you're serious about {base_benefit.lower()} and ready to use copy that finall
 
 {cta.strip().rstrip('.')}.
 """
+
 
     return headlines, sales_copy
 
