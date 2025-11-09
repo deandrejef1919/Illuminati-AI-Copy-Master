@@ -47,6 +47,184 @@ page = st.sidebar.radio(
         "Settings & Integrations",
     ]
 )
+# --- Helper: API keys from secrets or session ---
+
+def get_openai_key():
+    """Get OpenAI API key from Streamlit secrets or session."""
+    if "OPENAI_API_KEY" in st.secrets:
+        return st.secrets["OPENAI_API_KEY"]
+    key = st.session_state.get("openai_api_key", "").strip()
+    return key or None
+
+
+def get_gemini_key():
+    """Get Gemini API key from Streamlit secrets or session."""
+    if "GEMINI_API_KEY" in st.secrets:
+        return st.secrets["GEMINI_API_KEY"]
+    key = st.session_state.get("gemini_api_key", "").strip()
+    return key or None
+
+
+def generate_with_openai(prompt: str) -> str:
+    """Call OpenAI with a chat-style prompt. Returns text or raises an Exception."""
+    api_key = get_openai_key()
+    if not api_key:
+        raise RuntimeError("No OpenAI API key found in secrets or session.")
+
+    if openai is None:
+        raise RuntimeError("openai library is not installed.")
+
+    # Try new-style client; fall back to legacy if needed
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=api_key)
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a world-class direct response copywriter."},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.75,
+        )
+        return resp.choices[0].message.content.strip()
+    except Exception:
+        # Legacy style
+        openai.api_key = api_key
+        resp = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a world-class direct response copywriter."},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.75,
+        )
+        return resp["choices"][0]["message"]["content"].strip()
+
+
+def generate_with_gemini(prompt: str) -> str:
+    """Call Gemini with a prompt. Returns text or raises an Exception."""
+    api_key = get_gemini_key()
+    if not api_key:
+        raise RuntimeError("No Gemini API key found in secrets or session.")
+
+    if genai is None:
+        raise RuntimeError("google-generativeai library is not installed.")
+
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel("gemini-1.5-flash")
+    resp = model.generate_content(prompt)
+    return (resp.text or "").strip()
+
+
+def generate_rule_based_copy(
+    product_name: str,
+    product_desc: str,
+    audience: str,
+    tone: str,
+    benefits_list: list[str],
+    cta: str,
+    awareness: str,
+    master_style: str,
+):
+    """Local, no-API rule-based generator for headlines and sales copy."""
+
+    base_benefit = (
+        benefits_list[0] if benefits_list else "get better results with less effort and stress"
+    )
+
+    # Awareness angle
+    if awareness == "Unaware":
+        awareness_angle = "lead with curiosity and a bold, intriguing promise that wakes them up."
+    elif awareness == "Problem-aware":
+        awareness_angle = "agitate the pain they already feel and show you truly understand it."
+    elif awareness == "Solution-aware":
+        awareness_angle = "contrast old frustrating solutions with your better approach."
+    elif awareness == "Product-aware":
+        awareness_angle = "stack proof, specifics, and reasons to act today with your product."
+    else:  # Most-aware
+        awareness_angle = "reinforce the offer, sweeten the deal, and remove every ounce of risk."
+
+    style_flavor = {
+        "Gary Halbert": "raw, emotional, almost letter-style copy that pokes at greed, fear, curiosity, and desire.",
+        "David Ogilvy": "research-driven clarity with a focus on specific, credible benefits.",
+        "Dan Kennedy": "no-BS direct response copy with strong offers, deadlines, and risk reversal.",
+        "Claude Hopkins": "scientific advertising with testable claims and strong self-interest appeals.",
+        "Joe Sugarman": "slippery-slide storytelling with curiosity and sensory details.",
+        "Eugene Schwartz": "desire-intensifying copy tuned to market awareness and sophistication.",
+        "John Carlton": "punchy, street-wise hooks with vivid payoff and urgency.",
+        "Jay Abraham": "preeminence, value stacking, and strategic leverage of every advantage.",
+        "Robert Bly": "4 U's: Useful, Urgent, Unique, Ultra-specific, with clear benefits.",
+        "Neville Medhora": "simple, scannable, human copy with a hint of humor.",
+        "Joanna Wiebe": "voice-of-customer phrasing and sharp conversion-focused microcopy.",
+        "Hybrid Mix": "a blend of classic direct response aggression and modern conversion copy.",
+    }.get(master_style, "classic direct response flavor.")
+
+    headlines = []
+
+    # 1. Benefit + without pain
+    headlines.append(
+        f"{base_benefit} — without the usual { 'stress' if 'without' not in base_benefit.lower() else 'roadblocks' }"
+    )
+
+    # 2. How to + benefit
+    headlines.append(
+        f"How to {base_benefit.lower()} with {product_name} (Even If You Feel You’ve Tried Everything)"
+    )
+
+    # 3. Curiosity / shortcut
+    headlines.append(
+        f\"The {product_name} Shortcut That Quietly Turns Cold Traffic into Buyers\"
+    )
+
+    # 4. Direct offer to audience
+    first_audience_line = audience.splitlines()[0] if audience else "ambitious entrepreneurs"
+    headlines.append(
+        f\"New for {first_audience_line}: {product_name} That Finally Makes Your Traffic Pay\"
+    )
+
+    # 5. Ultra-specific style
+    headlines.append(
+        f\"Use {product_name} to {base_benefit.lower()} in the Next 30 Days—Or Less\"
+    )
+
+    if len(benefits_list) > 1:
+        second_benefit = benefits_list[1]
+        headlines.append(
+            f\"Turn {second_benefit.lower()} into your unfair advantage with {product_name}\"
+        )
+
+    # Bullet list
+    bullets = "".join([f\"- {b}\\n\" for b in benefits_list]) if benefits_list else "- Clear, measurable results\n"
+
+    sales_copy = f\"\"\"[{master_style}-inspired angle – {style_flavor}]
+
+ATTENTION
+
+If you're {audience or 'struggling to convert attention into actual sales'}, there's a good chance the problem isn’t you…
+it’s the message you’re putting in front of your market.
+
+INTEREST
+
+{product_name} is built to fix that.
+
+{product_desc}
+
+Instead of shouting into the void, you start speaking directly to what your prospects already care about most. You {awareness_angle}
+
+DESIRE
+
+Here’s what that looks like when it’s working for you:
+
+{bullets}
+
+ACTION
+
+If you’re serious about {base_benefit.lower()} and ready to use copy that finally matches the value you deliver, this is your move:
+
+{cta.strip().rstrip('.')}.
+\"\"\"  # end f-string
+
+    return headlines, sales_copy
 
 # --- Dashboard Page ---
 def page_dashboard():
