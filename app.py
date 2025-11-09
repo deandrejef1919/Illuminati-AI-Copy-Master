@@ -298,6 +298,51 @@ def send_zapier_webhook(url: str, payload: Dict) -> Tuple[bool, str]:
 
 
 # -------------------------
+# Optional OpenAI integration (smart brain)
+# -------------------------
+
+try:
+    import openai
+except ImportError:
+    openai = None
+
+
+def call_llm_openai(prompt: str, model: str = "gpt-4o-mini") -> Tuple[bool, str]:
+    """
+    Call OpenAI with a single prompt. Returns (ok, text_or_error).
+    Gracefully handles missing library or missing API key.
+    """
+    if openai is None:
+        return False, "OpenAI library not installed. Add 'openai' to requirements.txt."
+
+    api_key = st.secrets.get("OPENAI_API_KEY", None)
+    if not api_key:
+        return False, "Missing OPENAI_API_KEY in Streamlit secrets."
+
+    try:
+        openai.api_key = api_key
+        resp = openai.chat.completions.create(
+            model=model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a world-class direct-response copywriter combining "
+                        "the strengths of Halbert, Ogilvy, Kennedy, Sugarman, Schwartz, "
+                        "and modern conversion experts. You improve copy for conversions."
+                    ),
+                },
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.7,
+        )
+        text = resp.choices[0].message.content.strip()
+        return True, text
+    except Exception as e:
+        return False, f"OpenAI error: {e}"
+
+
+# -------------------------
 # Heuristic copy scoring
 # -------------------------
 
@@ -955,8 +1000,8 @@ def page_generate_copy():
 
     if engine_choice != "Rule-based (local templates)":
         st.warning(
-            "OpenAI / Gemini engines are not wired in this stable version yet. "
-            "Using rule-based copy below."
+            "OpenAI / Gemini engines are not fully wired into engine selection yet. "
+            "Using rule-based copy below, then optionally enhancing with OpenAI."
         )
 
     headlines, sales_copy = generate_rule_based_copy(
@@ -998,6 +1043,51 @@ def page_generate_copy():
         "This is a heuristic score based on length, emotional words, structure cues, CTAs, and specificity. "
         "Always test in the real world — the market is the final judge."
     )
+
+    # --- Optional AI enhancement ---
+    st.markdown("---")
+    st.markdown("### 🧠 Smart Rewrite (AI-Enhanced)")
+
+    if st.button("✨ Enhance This Copy With OpenAI"):
+        brief = f"""
+        Niche: {niche}
+        Master Style: {master_style}
+        Awareness Level: {awareness}
+        Desired Tone: {tone}
+        Product: {product_name}
+        Description: {product_desc}
+        Audience: {audience}
+        Benefits: {benefits_list}
+        CTA: {cta}
+        """
+
+        prompt = f"""
+        You are a world-class direct-response copywriter.
+
+        1. Read the BRIEF carefully.
+        2. Read the DRAFT COPY.
+        3. Rewrite the copy to:
+           - Keep the same big promise and offer
+           - Stay in the style of: {master_style}
+           - Improve clarity, emotional pull, and conversion potential
+           - Keep it suitable for {niche} and awareness level: {awareness}
+
+        BRIEF:
+        {brief}
+
+        DRAFT COPY:
+        {sales_copy}
+
+        Now output ONLY the improved copy. No explanation, no notes, just the final copy.
+        """
+
+        ok, result = call_llm_openai(prompt)
+        if ok:
+            st.success("AI-enhanced version generated below.")
+            st.markdown("#### 🧠 AI-Enhanced Version")
+            st.markdown(result)
+        else:
+            st.error(result)
 
     st.markdown("---")
     st.caption(
@@ -1655,6 +1745,28 @@ def page_copy_analyzer():
                 "Use this to spot obvious weak spots. For example, low emotional triggers or no clear CTA usually means low response."
             )
 
+            # Optional AI critique
+            if st.checkbox("🧠 Get AI Critique (OpenAI)", value=False):
+                prompt = f"""
+                You are a world-class direct-response copywriter.
+
+                Here is some copy. Give me a short critique focused on conversions:
+
+                1. 3–5 bullet points of strengths.
+                2. 3–5 bullet points of weaknesses.
+                3. 3–5 specific changes I should test (headlines, leads, CTAs, proof, etc).
+
+                Copy:
+                {text}
+                """
+
+                ok, feedback = call_llm_openai(prompt)
+                if ok:
+                    st.markdown("#### AI Critique")
+                    st.markdown(feedback)
+                else:
+                    st.error(feedback)
+
     else:
         col1, col2 = st.columns(2)
         with col1:
@@ -1723,8 +1835,8 @@ def page_settings_integrations():
 
     st.markdown(
         """
-        This version of **Illuminati AI Copy Master** is rule-based, so it doesn’t require any AI API keys yet.
-        Here’s where you manage ESP choices and webhooks for future automation.
+        This version of **Illuminati AI Copy Master** uses rule-based generation plus optional OpenAI enhancements.
+        To enable OpenAI, add your key in Streamlit secrets.
         """
     )
 
@@ -1739,6 +1851,27 @@ def page_settings_integrations():
             - Import the email sequences generated in this app  
             - Set up autoresponder flows  
             - Connect forms, chatbots, and landing pages to your funnels
+        """
+    )
+
+    st.markdown("---")
+    st.markdown("### 🤖 OpenAI API Setup (Optional)")
+
+    st.markdown(
+        """
+        To use the Smart Rewrite and AI Critique features:
+
+        1. Go to your Streamlit app dashboard.
+        2. Open **Settings → Secrets**.
+        3. Add a new entry:
+
+        ```ini
+        OPENAI_API_KEY = "sk-..."
+        ```
+
+        4. Save and reload the app.
+
+        If the key is missing or invalid, the app will fall back gracefully and show a clear error message.
         """
     )
 
