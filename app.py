@@ -2,6 +2,12 @@ import streamlit as st
 import textwrap
 from typing import List, Tuple, Dict
 
+# Try to import requests for Zapier webhooks (fail gracefully if missing)
+try:
+    import requests  # type: ignore
+except ImportError:
+    requests = None
+
 # -------------------------
 # Page config & base style
 # -------------------------
@@ -244,6 +250,24 @@ def choose_niche_defaults(niche: str) -> Tuple[str, List[str]]:
     return aud, benefits
 
 
+def send_zapier_webhook(url: str, payload: Dict) -> Tuple[bool, str]:
+    """
+    Minimal helper to POST JSON to a Zapier Catch Hook URL.
+    If 'requests' is not available, return a graceful error.
+    """
+    if not url:
+        return False, "No Zapier URL provided."
+
+    if requests is None:
+        return False, "The 'requests' library is not available on this server."
+
+    try:
+        resp = requests.post(url, json=payload, timeout=10)
+        return True, f"Webhook sent. HTTP status: {resp.status_code}"
+    except Exception as e:
+        return False, f"Error sending webhook: {e}"
+
+
 # -------------------------
 # Core copy generators
 # -------------------------
@@ -294,7 +318,7 @@ def generate_rule_based_copy(
         f"How {first_aud_line.capitalize()} Can {base_benefit.capitalize()} with {product_name}"
     )
     headlines.append(
-        f"{product_name}: The \"{base_benefit.capitalize()}\" Shortcut You Can Start Using Today"
+        f'{product_name}: The "{base_benefit.capitalize()}" Shortcut You Can Start Using Today'
     )
     headlines.append(
         f"Do You Make These Mistakes When Trying to {base_benefit.capitalize()}?"
@@ -305,7 +329,7 @@ def generate_rule_based_copy(
 
     if len(benefits_list) > 1:
         headlines.append(
-            f"Turn \"{benefits_list[1].capitalize()}\" Into Your Edge With {product_name}"
+            f'Turn "{benefits_list[1].capitalize()}" Into Your Edge With {product_name}'
         )
 
     # --- CTA Tone by niche ---
@@ -365,7 +389,7 @@ def generate_rule_based_copy(
         It works because it speaks directly to what your market already obsesses over most.
         You’re not begging for attention — you’re joining the conversation in their head.
 
-        In practice, that means you {awareness_angle} Instead of sounding like everybody else,
+        In practice, that means you {awareness_angle}. Instead of sounding like everybody else,
         you become the only obvious choice.
 
         DESIRE
@@ -622,7 +646,7 @@ def generate_classified_ads(
 
 
 # -------------------------
-# UI pages
+# UI page helpers
 # -------------------------
 
 def render_header():
@@ -640,6 +664,10 @@ def render_header():
     )
     st.markdown("---")
 
+
+# -------------------------
+# Pages
+# -------------------------
 
 def page_dashboard():
     render_header()
@@ -672,8 +700,8 @@ def page_dashboard():
             </ul>
             <p>
             Start on <strong>Generate Copy</strong> to build a long-form sales message,
-            then move to <strong>Email Sequences</strong> and the <strong>Classified Ad Writer</strong>
-            to light up your cold traffic from every angle.
+            then move to <strong>Email Sequences</strong>, the <strong>Classified Ad Writer</strong>,
+            and <strong>A/B Split Tester</strong> to light up your cold traffic from every angle.
             </p>
             </div>
             """,
@@ -690,7 +718,8 @@ def page_dashboard():
                 <li>Pick your niche & master style (Halbert, Ogilvy, Kennedy, etc.).</li>
                 <li>Generate headlines + sales copy.</li>
                 <li>Turn that into an email sequence and classifieds.</li>
-                <li>Use <strong>Traffic & Networks</strong> to grab traffic platforms & affiliate networks.</li>
+                <li>Use <strong>Traffic & Networks</strong> for offers and clicks.</li>
+                <li>Use <strong>A/B Split Tester</strong> & <strong>Analytics</strong> to judge what wins.</li>
             </ol>
             </div>
             """,
@@ -1194,6 +1223,180 @@ def page_traffic_networks():
     )
 
 
+def page_ab_split_tester():
+    render_header()
+    st.subheader("🧪 A/B Split Tester")
+
+    st.markdown(
+        """
+        Use this to compare two variants of a headline, sales page, email, ad, or funnel.
+        Enter impressions, clicks, and conversions to see CTR, CVR, EPC, and which variant is winning.
+        """
+    )
+
+    test_type = st.selectbox(
+        "Test Type",
+        ["Headline", "Sales Page / VSL", "Email Subject", "Display Ad / Banner", "Classified Ad", "Other"],
+        index=0,
+    )
+
+    with st.form("ab_test_form"):
+        st.markdown("### Variant Details")
+
+        col_a, col_b = st.columns(2)
+        with col_a:
+            st.markdown("**Variant A**")
+            name_a = st.text_input("Name A", f"{test_type} A")
+            copy_a = st.text_area("Copy / Notes A", "", key="copy_a")
+            imp_a = st.number_input("Impressions A", min_value=0, step=1, value=0)
+            clicks_a = st.number_input("Clicks A", min_value=0, step=1, value=0)
+            conv_a = st.number_input("Conversions A", min_value=0, step=1, value=0)
+            rev_a = st.number_input("Revenue A (optional)", min_value=0.0, step=1.0, value=0.0)
+
+        with col_b:
+            st.markdown("**Variant B**")
+            name_b = st.text_input("Name B", f"{test_type} B")
+            copy_b = st.text_area("Copy / Notes B", "", key="copy_b")
+            imp_b = st.number_input("Impressions B", min_value=0, step=1, value=0)
+            clicks_b = st.number_input("Clicks B", min_value=0, step=1, value=0)
+            conv_b = st.number_input("Conversions B", min_value=0, step=1, value=0)
+            rev_b = st.number_input("Revenue B (optional)", min_value=0.0, step=1.0, value=0.0)
+
+        submitted = st.form_submit_button("📊 Calculate A/B Results")
+
+    if not submitted:
+        st.info("Fill in the numbers for A and B, then click **Calculate**.")
+        return
+
+    def calc_metrics(imp, clicks, conv, rev):
+        ctr = (clicks / imp * 100) if imp > 0 else 0.0
+        cvr = (conv / clicks * 100) if clicks > 0 else 0.0
+        cr_total = (conv / imp * 100) if imp > 0 else 0.0
+        epc = (rev / clicks) if clicks > 0 else 0.0
+        roi = ((rev - imp) / imp * 100) if imp > 0 and rev > 0 else 0.0  # treating impressions as rough cost proxy
+        return ctr, cvr, cr_total, epc, roi
+
+    ctr_a, cvr_a, cr_a, epc_a, roi_a = calc_metrics(imp_a, clicks_a, conv_a, rev_a)
+    ctr_b, cvr_b, cr_b, epc_b, roi_b = calc_metrics(imp_b, clicks_b, conv_b, rev_b)
+
+    st.markdown("### Results")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"#### {name_a}")
+        st.write(f"Impressions: {imp_a}")
+        st.write(f"Clicks: {clicks_a}")
+        st.write(f"Conversions: {conv_a}")
+        st.write(f"CTR: {ctr_a:.2f}%")
+        st.write(f"Click-to-Conversion: {cvr_a:.2f}%")
+        st.write(f"Impression-to-Conversion: {cr_a:.2f}%")
+        st.write(f"EPC: ${epc_a:.2f}")
+        st.write(f"ROI (rough): {roi_a:.2f}%")
+
+    with col2:
+        st.markdown(f"#### {name_b}")
+        st.write(f"Impressions: {imp_b}")
+        st.write(f"Clicks: {clicks_b}")
+        st.write(f"Conversions: {conv_b}")
+        st.write(f"CTR: {ctr_b:.2f}%")
+        st.write(f"Click-to-Conversion: {cvr_b:.2f}%")
+        st.write(f"Impression-to-Conversion: {cr_b:.2f}%")
+        st.write(f"EPC: ${epc_b:.2f}")
+        st.write(f"ROI (rough): {roi_b:.2f}%")
+
+    # Determine winners
+    winner_ctr = "A" if ctr_a > ctr_b else ("B" if ctr_b > ctr_a else "Tie")
+    winner_cvr = "A" if cvr_a > cvr_b else ("B" if cvr_b > cvr_a else "Tie")
+    winner_epc = "A" if epc_a > epc_b else ("B" if epc_b > epc_a else "Tie")
+
+    st.markdown("---")
+    st.markdown("### 🏆 Quick Verdict")
+
+    verdict_lines = []
+    verdict_lines.append(f"- Higher CTR: **Variant {winner_ctr}**" if winner_ctr != "Tie" else "- CTR: **Tie**")
+    verdict_lines.append(f"- Better click-to-conversion rate: **Variant {winner_cvr}**" if winner_cvr != "Tie" else "- Click-to-conversion: **Tie**")
+    verdict_lines.append(f"- Higher EPC: **Variant {winner_epc}**" if winner_epc != "Tie" else "- EPC: **Tie**")
+
+    for line in verdict_lines:
+        st.markdown(line)
+
+    st.caption(
+        "Rule of thumb: Use CTR to judge hooks/headlines, and EPC or overall conversion to judge offers and funnels."
+    )
+
+
+def page_analytics():
+    render_header()
+    st.subheader("📈 Analytics & Campaign Tracker")
+
+    st.markdown(
+        """
+        Track key numbers for your campaigns (affiliate offers, solo ads, banners, classifieds)
+        and see basic metrics like CPC, CPL, CPS, and ROI. Data is stored only in your session.
+        """
+    )
+
+    if "analytics_history" not in st.session_state:
+        st.session_state["analytics_history"] = []
+
+    with st.form("analytics_form"):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            campaign_name = st.text_input("Campaign Name", "Default Campaign")
+            channel = st.selectbox(
+                "Channel",
+                ["Affiliate", "Solo Ads", "Banner / Display", "Classifieds", "Email", "Other"],
+                index=0,
+            )
+        with col2:
+            spend = st.number_input("Ad Spend / Cost ($)", min_value=0.0, step=1.0, value=0.0)
+            clicks = st.number_input("Clicks", min_value=0, step=1, value=0)
+        with col3:
+            leads = st.number_input("Leads / Opt-ins", min_value=0, step=1, value=0)
+            sales = st.number_input("Sales / Actions", min_value=0, step=1, value=0)
+
+        revenue = st.number_input("Revenue / Payout ($)", min_value=0.0, step=1.0, value=0.0)
+
+        submitted = st.form_submit_button("➕ Add / Update Campaign Snapshot")
+
+    if submitted:
+        # Calculate metrics
+        cpc = (spend / clicks) if clicks > 0 else 0.0
+        cpl = (spend / leads) if leads > 0 else 0.0
+        cps = (spend / sales) if sales > 0 else 0.0
+        epc = (revenue / clicks) if clicks > 0 else 0.0
+        roi = ((revenue - spend) / spend * 100) if spend > 0 else 0.0
+
+        snapshot = {
+            "Campaign": campaign_name,
+            "Channel": channel,
+            "Spend": spend,
+            "Clicks": clicks,
+            "Leads": leads,
+            "Sales": sales,
+            "Revenue": revenue,
+            "CPC": round(cpc, 4),
+            "CPL": round(cpl, 4),
+            "CPS": round(cps, 4),
+            "EPC": round(epc, 4),
+            "ROI%": round(roi, 2),
+        }
+
+        st.session_state["analytics_history"].append(snapshot)
+        st.success("Snapshot added to your analytics history for this session.")
+
+    if st.session_state["analytics_history"]:
+        st.markdown("### 📊 Campaign History (This Session)")
+        st.dataframe(st.session_state["analytics_history"])
+    else:
+        st.info("No campaign snapshots yet. Add one above to start tracking.")
+
+    st.caption(
+        "Use this tab to judge which traffic sources and offers are actually worth scaling. "
+        "Kennedy would say: ‘What you can measure, you can manage — and get paid from.’"
+    )
+
+
 def page_system_checklist():
     render_header()
     st.subheader("✅ System Checklist")
@@ -1244,27 +1447,62 @@ def page_settings_integrations():
 
     st.markdown(
         """
-        This version of **Illuminati AI Copy Master** is rule-based, so it doesn’t require any API keys.
-        When you’re ready for a Phase 2, we can wire in OpenAI, Gemini, Mistral, or Groq.
+        This version of **Illuminati AI Copy Master** is rule-based, so it doesn’t require any AI API keys yet.
+        Here’s where you manage ESP choices and webhooks for future automation.
         """
     )
+
+    st.markdown("### 📬 SendPulse – Recommended ESP")
+    st.markdown(
+        """
+        **SendPulse** is a multi-channel email marketing and automation platform with a generous free tier
+        (emails, chatbots, landing pages, and more).   
+
+        - Create a free SendPulse account:  
+          👉 [SendPulse Registration](https://sendpulse.com/register)
+        - Once you have an account, you can:
+            - Import the email sequences generated in this app  
+            - Set up autoresponder flows  
+            - Connect forms, chatbots, and landing pages to your funnels
+        """
+    )
+
+    st.markdown("---")
+    st.markdown("### 🔗 Zapier Webhooks (for future automations)")
 
     st.markdown(
         """
-        In Streamlit Cloud, you’ll later be able to go to **App → Settings → Secrets** and add:
-
-        ```toml
-        OPENAI_API_KEY = "sk-..."
-        GEMINI_API_KEY = "..."
-        ```
-
-        Then the **Engine Mode** dropdown on *Generate Copy* can call those APIs instead of
-        (or in addition to) the local rule-based templates.
+        In Zapier, create a Zap with **Webhooks by Zapier** → **Catch Hook** to get a unique URL.   
+        Paste that URL below and you can send simple JSON payloads from this app (for example, when you finalize a winning variant).
         """
     )
 
+    zap_url = st.text_input(
+        "Zapier Catch Hook URL",
+        st.session_state.get("zapier_url", ""),
+        help="Example: https://hooks.zapier.com/hooks/catch/123456/abcde",
+    )
+    st.session_state["zapier_url"] = zap_url
+
+    test_payload = {
+        "event": "test_ping",
+        "source": "Illuminati AI Copy Master",
+        "note": "You can customize this payload in the code for real events.",
+    }
+
+    if st.button("🚀 Send Test Webhook"):
+        if not zap_url:
+            st.error("Please paste your Zapier Catch Hook URL first.")
+        else:
+            ok, msg = send_zapier_webhook(zap_url, test_payload)
+            if ok:
+                st.success(msg)
+            else:
+                st.error(msg)
+
     st.caption(
-        "For now, focus on using the copy outputs with your ESP, funnel builder, and traffic sources."
+        "Treat your Zapier URL like a password. Don’t expose it publicly. "
+        "Once it’s set, you can extend this code to send real campaign events."
     )
 
 
@@ -1284,6 +1522,8 @@ def main():
                 "Classified Ad Writer",
                 "Manual & Lead Magnet",
                 "Traffic & Networks",
+                "A/B Split Tester",
+                "Analytics",
                 "System Checklist",
                 "Settings & Integrations",
             ],
@@ -1301,6 +1541,10 @@ def main():
         page_manual_assets()
     elif page == "Traffic & Networks":
         page_traffic_networks()
+    elif page == "A/B Split Tester":
+        page_ab_split_tester()
+    elif page == "Analytics":
+        page_analytics()
     elif page == "System Checklist":
         page_system_checklist()
     elif page == "Settings & Integrations":
@@ -1309,4 +1553,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
