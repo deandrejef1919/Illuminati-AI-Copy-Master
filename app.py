@@ -2118,6 +2118,66 @@ def main():
                 "Settings & Integrations",
             ],
         )
+    # Divider
+    st.markdown("---")
+    st.markdown("#### 🎧 The Strangest Secret")
+
+    st.markdown(
+        """
+        <style>
+        /* Glowing aura around the video */
+        .inspire-video-container {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .inspire-video-frame {
+            border: 2px solid #d4af37;
+            border-radius: 12px;
+            box-shadow:
+                0 0 10px rgba(212, 175, 55, 0.7),
+                0 0 20px rgba(155, 17, 30, 0.5);
+            animation: glowpulse 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes glowpulse {
+            from {
+                box-shadow:
+                    0 0 8px rgba(212, 175, 55, 0.5),
+                    0 0 16px rgba(155, 17, 30, 0.3);
+            }
+            to {
+                box-shadow:
+                    0 0 14px rgba(212, 175, 55, 0.9),
+                    0 0 28px rgba(155, 17, 30, 0.7);
+            }
+        }
+
+        .inspire-caption {
+            font-size: 0.75rem;
+            color: #aaaaaa;
+            margin-top: 4px;
+        }
+        </style>
+
+        <div class="inspire-video-container">
+            <iframe
+                class="inspire-video-frame"
+                width="250"
+                height="140"
+                src="https://www.youtube.com/embed/IN2H8U9Zr3k?autoplay=0&loop=1&playlist=IN2H8U9Zr3k"
+                title="The Strangest Secret by Earl Nightingale"
+                frameborder="0"
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+            ></iframe>
+            <p class="inspire-caption">
+                Earl Nightingale — “We become what we think about.”
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     if page == "Dashboard":
         page_dashboard()
