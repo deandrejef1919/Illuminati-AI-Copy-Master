@@ -105,9 +105,7 @@ def generate_with_gemini(prompt: str) -> str:
 
     if genai is None:
         raise RuntimeError("google-generativeai library is not installed.")
-            # Debug: show key short
-    masked = api_key[:4] + "…" + api_key[-4:]
-    st.debug(f"Using Gemini API key: {masked}")
+        
 
     genai.configure(api_key=api_key)
 
