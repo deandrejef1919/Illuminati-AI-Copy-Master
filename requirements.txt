@@ -1,0 +1,8 @@
+streamlit
+pandas
+fpdf2
+openai
+google-generativeai
+reportlab
+Pillow
+requests
