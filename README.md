@@ -1,6 +1,6 @@
 # 🔺 Illuminati AI Copy Master
 **Creator:** DeAndre Jefferson  
-**Website:** [https://1919.consumerwatchdog.io](https://1919.consumerwatchdog.io](https://1919.consumerwatchdog.io/healing-yourself-at-home-pdf)
+**Website:** [https://1919.consumerwatchdog.io/healing-yourself-at-home-pdf](https://1919.consumerwatchdog.io/healing-yourself-at-home-pdf)
 
 ## 🚀 Overview
 Illuminati AI Copy Master is an AI-powered copywriting and marketing command console that fuses the timeless persuasion strategies of the greats — Ogilvy, Halbert, Kennedy, Hopkins, Sugarman, and more — with modern AI automation.
