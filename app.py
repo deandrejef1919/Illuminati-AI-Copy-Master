@@ -1044,42 +1044,60 @@ def page_generate_copy():
         "Always test in the real world — the market is the final judge."
     )
 
-    # --- Optional AI enhancement ---
+       # --- Optional AI enhancement ---
     st.markdown("---")
     st.markdown("### 🧠 Smart Rewrite (AI-Enhanced)")
 
     if st.button("✨ Enhance This Copy With OpenAI"):
         brief = f"""
-        Niche: {niche}
-        Master Style: {master_style}
-        Awareness Level: {awareness}
-        Desired Tone: {tone}
-        Product: {product_name}
-        Description: {product_desc}
-        Audience: {audience}
-        Benefits: {benefits_list}
-        CTA: {cta}
-        """
+Niche: {niche}
+Master Style: {master_style}
+Awareness Level: {awareness}
+Desired Tone: {tone}
+Product: {product_name}
+Description: {product_desc}
+Audience: {audience}
+Benefits: {benefits_list}
+CTA: {cta}
+        """.strip()
 
         prompt = f"""
-        You are a world-class direct-response copywriter.
+You are a world-class direct-response copywriter.
 
-        1. Read the BRIEF carefully.
-        2. Read the DRAFT COPY.
-        3. Rewrite the copy to:
-           - Keep the same big promise and offer
-           - Stay in the style of: {master_style}
-           - Improve clarity, emotional pull, and conversion potential
-           - Keep it suitable for {niche} and awareness level: {awareness}
+You will be given:
 
-        BRIEF:
-        {brief}
+<BRIEF>
+{brief}
+</BRIEF>
 
-        DRAFT COPY:
-        {sales_copy}
+and a sales page draft:
 
-        Now output ONLY the improved copy. No explanation, no notes, just the final copy.
-        """
+<DRAFT>
+{sales_copy}
+</DRAFT>
+
+Your job:
+
+1. Rewrite ONLY the text inside <DRAFT> ... </DRAFT>.
+2. Keep the same core offer, product, and big promise.
+3. Keep the same general structure (ATTENTION / INTEREST / DESIRE / ACTION) if present.
+4. Make it:
+   - Clearer
+   - More emotionally compelling
+   - More concrete and specific (numbers, proof, vivid language)
+   - Stronger in direct-response persuasion (AIDA, PAS, strong CTAs).
+5. Maintain the style influence of: {master_style} and keep it suitable for the niche: {niche} and awareness level: {awareness}.
+6. Do NOT add the brief back into the output.
+7. Do NOT explain what you changed.
+8. Do NOT add any labels like BRIEF, DRAFT, ANALYSIS, or NOTES.
+
+Output:
+
+- Output ONLY the improved sales copy as a single piece of copy, ready to paste into a sales page.
+- Preserve or improve headings like ATTENTION / INTEREST / DESIRE / ACTION if they are present.
+
+Now return the rewritten copy only.
+        """.strip()
 
         ok, result = call_llm_openai(prompt)
         if ok:
@@ -1088,6 +1106,7 @@ def page_generate_copy():
             st.markdown(result)
         else:
             st.error(result)
+
 
     st.markdown("---")
     st.caption(
