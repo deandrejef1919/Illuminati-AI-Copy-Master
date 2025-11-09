@@ -1578,7 +1578,7 @@ def main():
             ],
         )
         st.markdown("---")
-        st.markdown("##### 🎧 Mindset Fuel")
+        st.markdown("##### 🎧 Follow The Light")
         st.markdown(
             """
             <div class="inspire-video-container">
