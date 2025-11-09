@@ -1,4 +1,4 @@
-# 🔺 Illuminati AI Copy Master – Full App with Email Sequences
+# 🔺 Illuminati AI Copy Master – Niche-Powered Version
 # Author: DeAndre Jefferson
 
 import streamlit as st
@@ -55,6 +55,308 @@ page = st.sidebar.radio(
         "Settings & Integrations",
     ],
 )
+
+# --- Niche Presets ----------------------------------------------------------
+
+NICHES = {
+    "General / Other": {
+        "default_audience": "busy, overwhelmed people who want real results without wasting time",
+        "default_goal": "sell the main offer",
+        "default_tone": "Direct & No-BS",
+        "default_master": "Hybrid Mix",
+        "sample_benefits": [
+            "Get clear, step-by-step guidance",
+            "Stop wasting time on things that don't move the needle",
+            "See real results in weeks, not months",
+        ],
+        "niche_note": "Use straightforward benefit-driven copy with clear promises and proof.",
+    },
+    # --- Natural / Health / Spirituality ---
+    "Natural / Alternative Healing": {
+        "default_audience": "health-conscious adults who prefer natural remedies over pills and quick fixes",
+        "default_goal": "sell a natural healing solution or program",
+        "default_tone": "Calm & Reassuring",
+        "default_master": "Claude Hopkins",
+        "sample_benefits": [
+            "Relieve nagging symptoms without harsh drugs",
+            "Support your body’s natural healing process",
+            "Follow a simple routine you can stick to",
+        ],
+        "niche_note": "Combine science and empathy. Show how the natural solution is safer, smarter, and sustainable.",
+    },
+    "Spirituality & Alternative Beliefs": {
+        "default_audience": "seekers who feel 'there must be more to life' than their current reality",
+        "default_goal": "sell a spiritual course, reading, or community",
+        "default_tone": "Calm & Reassuring",
+        "default_master": "Joe Sugarman",
+        "sample_benefits": [
+            "Feel more aligned and at peace every day",
+            "Tap into intuition and inner guidance",
+            "Release old beliefs that keep you stuck",
+        ],
+        "niche_note": "Lean into story, transformation, and emotional resonance. Avoid overclaiming.",
+    },
+    "Specific Health Problems": {
+        "default_audience": "people who are tired of struggling with a specific health issue and want options",
+        "default_goal": "sell a specific health protocol or guide",
+        "default_tone": "Calm & Professional",
+        "default_master": "Claude Hopkins",
+        "sample_benefits": [
+            "Understand what’s really driving your symptoms",
+            "Follow a step-by-step action plan",
+            "Support your body naturally and intelligently",
+        ],
+        "niche_note": "Be careful with medical claims. Focus on education, lifestyle, and responsible support.",
+    },
+    "Vanity Niches": {
+        "default_audience": "image-conscious people who want to look better, feel sexier, and stand out",
+        "default_goal": "sell a beauty, fitness, or appearance-related offer",
+        "default_tone": "Urgent & Hypey",
+        "default_master": "Gary Halbert",
+        "sample_benefits": [
+            "Look noticeably better in the mirror",
+            "Turn more heads without saying a word",
+            "Boost confidence every time you walk into a room",
+        ],
+        "niche_note": "Lean into transformation and social proof. Make the emotional payoff vivid.",
+    },
+    # --- Relationships ---
+    "Getting Your Ex Back": {
+        "default_audience": "men or women who desperately want a second chance with a specific ex",
+        "default_goal": "sell a get-your-ex-back program",
+        "default_tone": "Urgent & Hypey",
+        "default_master": "Gary Halbert",
+        "sample_benefits": [
+            "Avoid the desperate mistakes that push your ex further away",
+            "Trigger feelings of attraction instead of pity",
+            "Give yourself the best shot at a real second chance",
+        ],
+        "niche_note": "Use emotional storytelling and high empathy. Avoid manipulation or false guarantees.",
+    },
+    "Dating For Women": {
+        "default_audience": "single women who want a committed, high-quality relationship",
+        "default_goal": "sell a dating or femininity-focused program",
+        "default_tone": "Friendly & Conversational",
+        "default_master": "Joanna Wiebe",
+        "sample_benefits": [
+            "Attract higher-quality men who actually commit",
+            "Stop wasting time on situationships",
+            "Know exactly what to say and do on dates",
+        ],
+        "niche_note": "Write like a trusted older sister. Real talk, specific, supportive.",
+    },
+    "Dating For Men": {
+        "default_audience": "men who feel invisible or rejected and want to become more attractive and confident",
+        "default_goal": "sell a dating confidence or communication program",
+        "default_tone": "Direct & No-BS",
+        "default_master": "John Carlton",
+        "sample_benefits": [
+            "Stop freezing up around women you actually like",
+            "Become the kind of man women notice and respect",
+            "Use simple conversation that doesn’t feel fake or creepy",
+        ],
+        "niche_note": "Straight talk with respect. Focus on confidence, behavior, and self-respect.",
+    },
+    "Marriage": {
+        "default_audience": "married couples who feel distant and want to reconnect",
+        "default_goal": "sell a marriage or communication program",
+        "default_tone": "Calm & Reassuring",
+        "default_master": "David Ogilvy",
+        "sample_benefits": [
+            "Stop fighting about the same things over and over",
+            "Feel like a team again instead of roommates",
+            "Have real conversations that bring you closer",
+        ],
+        "niche_note": "Emphasize stability, safety, and long-term connection. Respect both partners.",
+    },
+    "Sexuality": {
+        "default_audience": "adults who want better intimacy, confidence, and chemistry",
+        "default_goal": "sell a sexual confidence or intimacy program",
+        "default_tone": "Friendly & Conversational",
+        "default_master": "Joe Sugarman",
+        "sample_benefits": [
+            "Feel more confident and relaxed in intimate moments",
+            "Break out of boring routines without pressure",
+            "Create stronger emotional and physical connection",
+        ],
+        "niche_note": "Keep it tasteful but honest. Focus on intimacy, safety, and mutual enjoyment.",
+    },
+    "Body Language": {
+        "default_audience": "people who want to read others better and send the right signals",
+        "default_goal": "sell a body language or social skills program",
+        "default_tone": "Direct & No-BS",
+        "default_master": "Robert Bly",
+        "sample_benefits": [
+            "Instantly make better first impressions",
+            "Read what others are really feeling (without guessing)",
+            "Project confidence even when you’re nervous",
+        ],
+        "niche_note": "Lots of concrete examples and simple body tweaks that feel doable.",
+    },
+    "Parenting": {
+        "default_audience": "parents who feel overwhelmed and want calmer, happier kids",
+        "default_goal": "sell a parenting, behavior, or communication program",
+        "default_tone": "Calm & Reassuring",
+        "default_master": "Neville Medhora",
+        "sample_benefits": [
+            "Reduce daily arguments and power struggles",
+            "Set boundaries without yelling or guilt",
+            "Feel proud of how you’re raising your kids",
+        ],
+        "niche_note": "Empathetic, practical, encouraging. Acknowledge guilt and pressure parents feel.",
+    },
+    # --- Money ---
+    "Real Estate": {
+        "default_audience": "new or intermediate investors who want cashflow or flips without blowing up their lives",
+        "default_goal": "sell a real estate investing course or coaching",
+        "default_tone": "Direct & No-BS",
+        "default_master": "Dan Kennedy",
+        "sample_benefits": [
+            "Understand deals without getting scammed",
+            "Avoid the dumb rookie mistakes",
+            "Build long-term wealth with simple frameworks",
+        ],
+        "niche_note": "Talk in money, risk, and control. Respect skepticism.",
+    },
+    "Investing and Trading": {
+        "default_audience": "people who want to grow wealth without gambling blindly",
+        "default_goal": "sell an investing or trading system",
+        "default_tone": "Calm & Professional",
+        "default_master": "David Ogilvy",
+        "sample_benefits": [
+            "Stop guessing and start following a clear process",
+            "Manage risk so you can sleep at night",
+            "Grow your account with rules, not emotions",
+        ],
+        "niche_note": "Avoid wild promises. Emphasize process, discipline, and risk management.",
+    },
+    "Money Mindset": {
+        "default_audience": "people who feel blocked around money and success",
+        "default_goal": "sell a money mindset or inner game program",
+        "default_tone": "Friendly & Conversational",
+        "default_master": "Jay Abraham",
+        "sample_benefits": [
+            "Drop hidden beliefs that keep you broke",
+            "Feel worthy of charging (and receiving) more",
+            "Make decisions from abundance, not fear",
+        ],
+        "niche_note": "Mix emotional insight with practical moves. Avoid pure fluff.",
+    },
+    "Start or Grow an Online Business": {
+        "default_audience": "aspiring or struggling online entrepreneurs",
+        "default_goal": "sell a business-building program, coaching, or DFY",
+        "default_tone": "Direct & No-BS",
+        "default_master": "Dan Kennedy",
+        "sample_benefits": [
+            "Pick a real niche that actually buys",
+            "Create offers people are eager to pay for",
+            "Build a simple system that brings leads and sales in regularly",
+        ],
+        "niche_note": "Hit hard on focus, action, and real-world proof.",
+    },
+    "Small Business Marketing Online": {
+        "default_audience": "local or small business owners who feel lost online",
+        "default_goal": "sell marketing services, courses, or DFY",
+        "default_tone": "Calm & Professional",
+        "default_master": "Robert Bly",
+        "sample_benefits": [
+            "Turn your website into a real lead machine",
+            "Get more customers without burning out",
+            "Understand what’s actually working online",
+        ],
+        "niche_note": "Practical, grounded, jargon-free. Respect their time and budgets.",
+    },
+    "Time Management": {
+        "default_audience": "busy people who feel behind and overwhelmed",
+        "default_goal": "sell a productivity or time mastery system",
+        "default_tone": "Calm & Reassuring",
+        "default_master": "Neville Medhora",
+        "sample_benefits": [
+            "End your day actually feeling done",
+            "Know exactly what to do first every morning",
+            "Create more free time without earning less",
+        ],
+        "niche_note": "Show small wins that add up. Focus on relief and control.",
+    },
+    # --- General Interest ---
+    "Pets": {
+        "default_audience": "pet owners who treat their animals like family",
+        "default_goal": "sell a pet training, health, or care product",
+        "default_tone": "Friendly & Conversational",
+        "default_master": "Joe Sugarman",
+        "sample_benefits": [
+            "Have a calmer, happier pet",
+            "Solve behavior issues without yelling",
+            "Feel confident you’re doing the best for them",
+        ],
+        "niche_note": "Tap into emotion + responsibility. People deeply care about their pets.",
+    },
+    "Survival": {
+        "default_audience": "preppers and families who want to be ready when things go wrong",
+        "default_goal": "sell survival gear, training, or info",
+        "default_tone": "Urgent & Hypey",
+        "default_master": "Gary Halbert",
+        "sample_benefits": [
+            "Protect your family when systems fail",
+            "Have food, water, and supplies when others panic",
+            "Sleep better knowing you’re not at the mercy of chaos",
+        ],
+        "niche_note": "Use fear responsibly. Offer preparedness, not paranoia.",
+    },
+    "DFY (Done For You)": {
+        "default_audience": "busy professionals who would rather pay than DIY",
+        "default_goal": "sell done-for-you services or implementation",
+        "default_tone": "High-End / Premium",
+        "default_master": "Jay Abraham",
+        "sample_benefits": [
+            "Skip the guesswork and hand it to experts",
+            "Save months of trial and error",
+            "Get a polished, working asset delivered",
+        ],
+        "niche_note": "Lean into leverage, time-saving, and ROI. Make it feel like an investment, not an expense.",
+    },
+    "Music": {
+        "default_audience": "aspiring or hobby musicians who want to improve or get noticed",
+        "default_goal": "sell lessons, courses, or tools",
+        "default_tone": "Friendly & Conversational",
+        "default_master": "Neville Medhora",
+        "sample_benefits": [
+            "Play songs you actually love",
+            "Finally understand what you’re doing musically",
+            "Get more confident sharing your music",
+        ],
+        "niche_note": "Tap passion and identity. Make practice feel fun and rewarding.",
+    },
+    "Magic": {
+        "default_audience": "people who love surprising and entertaining others with magic",
+        "default_goal": "sell magic tricks, courses, or memberships",
+        "default_tone": "Friendly & Conversational",
+        "default_master": "Joe Sugarman",
+        "sample_benefits": [
+            "Blow minds at parties without complicated setups",
+            "Perform tricks that get real reactions",
+            "Build a unique, memorable personal vibe",
+        ],
+        "niche_note": "Use curiosity and surprise. Keep it playful.",
+    },
+    "Sports": {
+        "default_audience": "athletes or fans who want better performance or deeper enjoyment",
+        "default_goal": "sell trainings, coaching, or fan experiences",
+        "default_tone": "Direct & No-BS",
+        "default_master": "John Carlton",
+        "sample_benefits": [
+            "Improve your performance without burning out",
+            "Train smarter, not just harder",
+            "Enjoy the game more by knowing what actually works",
+        ],
+        "niche_note": "Competitive, results-driven tone. Respect their grind.",
+    },
+}
+
+
+def get_niche_profile(niche: str) -> dict:
+    return NICHES.get(niche, NICHES["General / Other"])
+
 
 # === Helpers: API keys from secrets or session ===
 
@@ -530,13 +832,27 @@ def page_generate_copy():
     st.session_state["engine_mode"] = engine_choice
     st.markdown(f"**Current engine mode:** `{engine_choice}`")
     st.markdown("---")
+
+    # Niche select
+    niche = st.selectbox(
+        "Niche / Market",
+        list(NICHES.keys()),
+        index=0,
+        help="Choose the niche so the engine can lean into the right angles and benefits.",
+    )
+    profile = get_niche_profile(niche)
+    st.caption(
+        f"Recommended for {niche}: tone **{profile['default_tone']}**, master style **{profile['default_master']}**."
+    )
+
     st.markdown("### ✍️ Copy Brief")
 
     with st.form("copy_brief_form"):
         product_name = st.text_input("Product / Service Name", "")
         product_desc = st.text_area("Product / Service Description", "")
         audience = st.text_area(
-            "Target Audience (demographics, psychographics, pain points)", ""
+            "Target Audience (demographics, psychographics, pain points)",
+            profile["default_audience"],
         )
         tone = st.selectbox(
             "Desired Tone",
@@ -547,11 +863,26 @@ def page_generate_copy():
                 "Urgent & Hypey",
                 "Calm & Professional",
             ],
-            index=0,
+            index=[
+                "Direct & No-BS",
+                "Friendly & Conversational",
+                "High-End / Premium",
+                "Urgent & Hypey",
+                "Calm & Professional",
+            ].index(profile["default_tone"])
+            if profile["default_tone"]
+            in [
+                "Direct & No-BS",
+                "Friendly & Conversational",
+                "High-End / Premium",
+                "Urgent & Hypey",
+                "Calm & Professional",
+            ]
+            else 0,
         )
         benefits_text = st.text_area(
             "Key Benefits & USPs (one per line)",
-            placeholder="E.g.\nLose weight without starving\nSave 5 hours a week\nNo prior experience needed",
+            value="\n".join(profile["sample_benefits"]),
         )
         cta = st.text_input("Primary Call To Action (CTA)", "Click here to get started")
         awareness = st.selectbox(
@@ -575,7 +906,36 @@ def page_generate_copy():
                 "Joanna Wiebe",
                 "Hybrid Mix",
             ],
-            index=0,
+            index=[
+                "Gary Halbert",
+                "David Ogilvy",
+                "Dan Kennedy",
+                "Claude Hopkins",
+                "Joe Sugarman",
+                "Eugene Schwartz",
+                "John Carlton",
+                "Jay Abraham",
+                "Robert Bly",
+                "Neville Medhora",
+                "Joanna Wiebe",
+                "Hybrid Mix",
+            ].index(profile["default_master"])
+            if profile["default_master"]
+            in [
+                "Gary Halbert",
+                "David Ogilvy",
+                "Dan Kennedy",
+                "Claude Hopkins",
+                "Joe Sugarman",
+                "Eugene Schwartz",
+                "John Carlton",
+                "Jay Abraham",
+                "Robert Bly",
+                "Neville Medhora",
+                "Joanna Wiebe",
+                "Hybrid Mix",
+            ]
+            else 0,
         )
         submitted = st.form_submit_button("⚡ Generate Headlines & Sales Copy")
 
@@ -590,6 +950,11 @@ def page_generate_copy():
         return
 
     benefits_list = [b.strip() for b in benefits_text.split("\n") if b.strip()]
+    if not benefits_list:
+        benefits_list = profile["sample_benefits"]
+
+    if not audience.strip():
+        audience = profile["default_audience"]
 
     prompt = f"""
 You are a legendary direct response copywriter channeling the combined wisdom of:
@@ -605,6 +970,12 @@ You are a legendary direct response copywriter channeling the combined wisdom of
 - Robert Bly
 - Joanna Wiebe
 - Neville Medhora
+
+Niche / Market:
+{niche}
+
+Niche strategy note:
+{profile['niche_note']}
 
 Write primarily in the style of: {master_style}.
 
@@ -633,7 +1004,7 @@ Awareness level:
 
 TASK:
 
-1. Generate 5–8 high-converting headlines optimized for cold traffic.
+1. Generate 5–8 high-converting headlines optimized for cold traffic in this niche.
 2. Then write a long-form sales copy draft that:
    - Hooks hard in the first 2–3 sentences
    - Agitates the core pains
@@ -747,19 +1118,31 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
     )
     st.session_state["engine_mode"] = engine_choice
 
+    niche = st.selectbox(
+        "Niche / Market for this sequence",
+        list(NICHES.keys()),
+        index=0,
+    )
+    profile = get_niche_profile(niche)
+    st.caption(
+        f"For {niche}, recommended: tone **{profile['default_tone']}**, master style **{profile['default_master']}**."
+    )
+    st.caption(f"Niche note: {profile['niche_note']}")
+
     with st.form("email_sequence_form"):
         product_name = st.text_input("Product / Service Name", "")
         product_desc = st.text_area("Product / Service Description", "")
         audience = st.text_area(
-            "Target Audience (who are these emails going to?)", ""
+            "Target Audience (who are these emails going to?)",
+            profile["default_audience"],
         )
         benefits_text = st.text_area(
             "Key Benefits (one per line)",
-            placeholder="E.g.\nLose 10 lbs without starving\nWork from home part-time\nGet more leads without cold calling",
+            "\n".join(profile["sample_benefits"]),
         )
         goal = st.text_input(
             "Sequence Goal (e.g. sell main offer, book call, register for webinar)",
-            "Sell the main offer",
+            profile["default_goal"],
         )
         cta = st.text_input(
             "Call to Action (plain text - link or instruction)",
@@ -774,7 +1157,22 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
                 "Urgent & Hypey",
                 "Calm & Reassuring",
             ],
-            index=0,
+            index=[
+                "Direct & No-BS",
+                "Friendly & Conversational",
+                "High-End / Premium",
+                "Urgent & Hypey",
+                "Calm & Reassuring",
+            ].index(profile["default_tone"])
+            if profile["default_tone"]
+            in [
+                "Direct & No-BS",
+                "Friendly & Conversational",
+                "High-End / Premium",
+                "Urgent & Hypey",
+                "Calm & Reassuring",
+            ]
+            else 0,
         )
         seq_type = st.selectbox(
             "Sequence Type",
@@ -803,7 +1201,36 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
                 "Joanna Wiebe",
                 "Hybrid Mix",
             ],
-            index=0,
+            index=[
+                "Gary Halbert",
+                "David Ogilvy",
+                "Dan Kennedy",
+                "Claude Hopkins",
+                "Joe Sugarman",
+                "Eugene Schwartz",
+                "John Carlton",
+                "Jay Abraham",
+                "Robert Bly",
+                "Neville Medhora",
+                "Joanna Wiebe",
+                "Hybrid Mix",
+            ].index(profile["default_master"])
+            if profile["default_master"]
+            in [
+                "Gary Halbert",
+                "David Ogilvy",
+                "Dan Kennedy",
+                "Claude Hopkins",
+                "Joe Sugarman",
+                "Eugene Schwartz",
+                "John Carlton",
+                "Jay Abraham",
+                "Robert Bly",
+                "Neville Medhora",
+                "Joanna Wiebe",
+                "Hybrid Mix",
+            ]
+            else 0,
         )
         num_emails = st.slider(
             "Number of emails in the sequence", min_value=3, max_value=10, value=5
@@ -820,6 +1247,11 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
         return
 
     benefits_list = [b.strip() for b in benefits_text.split("\n") if b.strip()]
+    if not benefits_list:
+        benefits_list = profile["sample_benefits"]
+
+    if not audience.strip():
+        audience = profile["default_audience"]
 
     if engine_choice == "Rule-based":
         seq_text = generate_rule_based_email_sequence(
@@ -852,6 +1284,12 @@ You are a legendary direct response email copywriter, channeling:
 - Robert Bly
 - Joanna Wiebe
 - Neville Medhora
+
+Niche / Market:
+{niche}
+
+Niche strategy note:
+{profile['niche_note']}
 
 Write primarily in the style of: {master_style}.
 
@@ -1562,7 +2000,7 @@ def page_settings():
             "OpenAI API Key",
             type="password",
             value=st.session_state.get("openai_api_key", ""),
-            help="Used only in this session. For production, prefer Streamlit secrets.",
+            help="Used only in this session. For long-term, prefer Streamlit secrets.",
         )
         st.session_state["openai_api_key"] = openai_key
 
@@ -1571,7 +2009,7 @@ def page_settings():
             "Gemini API Key",
             type="password",
             value=st.session_state.get("gemini_api_key", ""),
-            help="Used only in this session. For production, prefer Streamlit secrets.",
+            help="Used only in this session. For long-term, prefer Streamlit secrets.",
         )
         st.session_state["gemini_api_key"] = gemini_key
 
@@ -1619,4 +2057,5 @@ elif page == "Traffic & Networks":
     page_traffic_networks()
 elif page == "Settings & Integrations":
     page_settings()
+
 
