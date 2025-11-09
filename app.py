@@ -246,6 +246,231 @@ def page_dashboard():
     - **System Checklist** – launch checklist  
     - **Settings & Integrations** – configure engine mode & API keys  
     """)
+    def page_generate_copy():
+    st.header("🧠 Generate Copy")
+
+    # Default engine from session, but allow per-run override
+    default_engine = st.session_state.get("engine_mode", "Rule-based")
+    engine_choice = st.selectbox(
+        "Engine",
+        ["Rule-based", "OpenAI", "Gemini"],
+        index=["Rule-based", "OpenAI", "Gemini"].index(default_engine),
+        help="Rule-based uses local templates only. OpenAI / Gemini use external AI models.",
+    )
+    # Keep session in sync
+    st.session_state["engine_mode"] = engine_choice
+
+    st.markdown(f"**Current engine mode:** `{engine_choice}`")
+
+    st.markdown("---")
+    st.markdown("### ✍️ Copy Brief")
+
+    with st.form("copy_brief_form"):
+        product_name = st.text_input("Product / Service Name", "")
+        product_desc = st.text_area("Product / Service Description", "")
+        audience = st.text_area("Target Audience (demographics, psychographics, pain points)", "")
+        tone = st.selectbox(
+            "Desired Tone",
+            [
+                "Direct & No-BS",
+                "Friendly & Conversational",
+                "High-End / Premium",
+                "Urgent & Hypey",
+                "Calm & Professional",
+            ],
+            index=0,
+        )
+        benefits_text = st.text_area(
+            "Key Benefits & USPs (one per line)",
+            placeholder="E.g.\nLose weight without starving\nSave 5 hours a week\nNo prior experience needed",
+        )
+        cta = st.text_input("Primary Call To Action (CTA)", "Click here to get started")
+
+        awareness = st.selectbox(
+            "Audience Awareness Level (Eugene Schwartz)",
+            [
+                "Unaware",
+                "Problem-aware",
+                "Solution-aware",
+                "Product-aware",
+                "Most-aware",
+            ],
+            index=2,
+        )
+
+        master_style = st.selectbox(
+            "Master Style Influence",
+            [
+                "Gary Halbert",
+                "David Ogilvy",
+                "Dan Kennedy",
+                "Claude Hopkins",
+                "Joe Sugarman",
+                "Eugene Schwartz",
+                "John Carlton",
+                "Jay Abraham",
+                "Robert Bly",
+                "Neville Medhora",
+                "Joanna Wiebe",
+                "Hybrid Mix",
+            ],
+            index=0,
+        )
+
+        submitted = st.form_submit_button("⚡ Generate Headlines & Sales Copy")
+
+    if not submitted:
+        st.info("Fill out the brief and click **Generate** to see headline ideas and a sales copy draft.")
+        return
+
+    if not product_name or not product_desc:
+        st.error("Please provide at least a product name and description.")
+        return
+
+    # Parse benefits
+    benefits_list = [b.strip() for b in benefits_text.split("\n") if b.strip()]
+
+    # RULE-BASED ENGINE
+    if engine_choice == "Rule-based":
+        headlines, sales_copy = generate_rule_based_copy(
+            product_name=product_name,
+            product_desc=product_desc,
+            audience=audience,
+            tone=tone,
+            benefits_list=benefits_list,
+            cta=cta,
+            awareness=awareness,
+            master_style=master_style,
+        )
+        st.markdown("### 📰 Headline Variations (Rule-based)")
+        for i, h in enumerate(headlines, start=1):
+            st.write(f"{i}. {h}")
+
+        st.markdown("---")
+        st.markdown("### 📜 Sales Copy Draft")
+        st.code(sales_copy, language="markdown")
+        return
+
+    # AI PROMPT (used by OpenAI or Gemini)
+    prompt = f"""
+You are a legendary direct response copywriter channeling the combined wisdom of:
+
+- David Ogilvy
+- Gary Halbert
+- Claude Hopkins
+- Joe Sugarman
+- Eugene Schwartz
+- John Carlton
+- Dan Kennedy
+- Jay Abraham
+- Robert Bly
+- Joanna Wiebe
+- Neville Medhora
+
+Write in the primary style of: {master_style}.
+
+Use AIDA (Attention, Interest, Desire, Action), PAS (Problem, Agitate, Solve), and FAB (Features, Advantages, Benefits).
+
+TASK:
+
+1. Generate 5-8 strong headlines optimized for cold traffic, respecting this awareness level:
+   {awareness}
+
+2. Then generate a persuasive sales copy draft that:
+   - Hooks hard in the first 2–3 sentences
+   - Agitates the core pains of this audience
+   - Presents {product_name} as the natural solution
+   - Uses some bullets for benefits
+   - Ends with a strong call-to-action: "{cta}"
+
+CONTEXT:
+
+Product / Service Name:
+{product_name}
+
+Product / Service Description:
+{product_desc}
+
+Target Audience:
+{audience}
+
+Desired Tone:
+{tone}
+
+Key Benefits & USPs:
+{benefits_text}
+
+OUTPUT FORMAT (IMPORTANT):
+
+HEADLINES:
+1. ...
+2. ...
+3. ...
+4. ...
+5. ...
+(Up to 8)
+
+SALES COPY:
+[Write the full sales copy here.]
+""".strip()
+
+    # OPENAI ENGINE
+    if engine_choice == "OpenAI":
+        try:
+            ai_text = generate_with_openai(prompt)
+        except Exception as e:
+            st.error(f"OpenAI generation failed: {e}")
+            st.info("Falling back to rule-based copy.")
+            headlines, sales_copy = generate_rule_based_copy(
+                product_name=product_name,
+                product_desc=product_desc,
+                audience=audience,
+                tone=tone,
+                benefits_list=benefits_list,
+                cta=cta,
+                awareness=awareness,
+                master_style=master_style,
+            )
+            st.markdown("### 📰 Headline Variations (Rule-based fallback)")
+            for i, h in enumerate(headlines, start=1):
+                st.write(f"{i}. {h}")
+            st.markdown("---")
+            st.markdown("### 📜 Sales Copy Draft (Rule-based fallback)")
+            st.code(sales_copy, language="markdown")
+            return
+
+        st.markdown("### 🤖 OpenAI Output")
+        st.markdown(ai_text)
+        return
+
+    # GEMINI ENGINE
+    if engine_choice == "Gemini":
+        try:
+            ai_text = generate_with_gemini(prompt)
+        except Exception as e:
+            st.error(f"Gemini generation failed: {e}")
+            st.info("Falling back to rule-based copy.")
+            headlines, sales_copy = generate_rule_based_copy(
+                product_name=product_name,
+                product_desc=product_desc,
+                audience=audience,
+                tone=tone,
+                benefits_list=benefits_list,
+                cta=cta,
+                awareness=awareness,
+                master_style=master_style,
+            )
+            st.markdown("### 📰 Headline Variations (Rule-based fallback)")
+            for i, h in enumerate(headlines, start=1):
+                st.write(f"{i}. {h}")
+            st.markdown("---")
+            st.markdown("### 📜 Sales Copy Draft (Rule-based fallback)")
+            st.code(sales_copy, language="markdown")
+            return
+
+        st.markdown("### 🤖 Gemini Output")
+        st.markdown(ai_text)
+
 
 # --- Generate Copy Page ---
 def page_generate_copy():
