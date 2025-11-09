@@ -1,4 +1,4 @@
-# 🔺 Illuminati AI Copy Master – Main App with AI Engines + Checklist Presets + Traffic Networks
+# 🔺 Illuminati AI Copy Master – Main App with AI Engines + Checklist Presets + Traffic Networks + Classified Ad Writer
 # Author: DeAndre Jefferson
 
 import streamlit as st
@@ -36,6 +36,10 @@ if "checklist_presets" not in st.session_state:
     # name -> {key: bool}
     st.session_state["checklist_presets"] = {}
 
+if "campaign_history" not in st.session_state:
+    # list of dicts with metrics
+    st.session_state["campaign_history"] = []
+
 # --- Sidebar Navigation ---
 st.sidebar.markdown("### 🔺 Illuminati AI Copy Master")
 st.sidebar.caption("Strategic Copy & Traffic Command Console")
@@ -45,6 +49,7 @@ page = st.sidebar.radio(
     [
         "Dashboard",
         "Generate Copy",
+        "Classified Ad Writer",
         "Manual & Assets",
         "System Checklist",
         "Traffic & Networks",
@@ -235,9 +240,10 @@ Welcome to **Illuminati AI Copy Master** — your all-in-one hub for:
 Use the navigation on the left to access:
 - **Dashboard** – overview  
 - **Generate Copy** – rule-based + AI engines  
+- **Classified Ad Writer** – short-form classified ads for traffic sites  
 - **Manual & Assets** – generate your Illuminati AI manual package  
 - **System Checklist** – launch checklist with presets  
-- **Traffic & Networks** – traffic sources & quick analyzer  
+- **Traffic & Networks** – traffic sources & quick analyzer + history  
 - **Settings & Integrations** – configure engine mode & API keys  
 """)
 
@@ -470,6 +476,175 @@ SALES COPY:
         return
 
 
+# --- Classified Ad Writer Page ---
+def page_classified_writer():
+    st.header("📢 Classified Ad Writer")
+
+    st.markdown("""
+Generate short, punchy classified ads for:
+
+- Free classified sites (Craigslist, Locanto, etc.)  
+- Low-friction marketplaces  
+- Simple text-based placements  
+
+You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
+""")
+
+    default_engine = st.session_state.get("engine_mode", "Rule-based")
+    engine_choice = st.selectbox(
+        "Engine",
+        ["Rule-based", "OpenAI", "Gemini"],
+        index=["Rule-based", "OpenAI", "Gemini"].index(default_engine),
+        help="Rule-based uses local templates. OpenAI / Gemini use AI models if keys are set.",
+    )
+    st.session_state["engine_mode"] = engine_choice
+
+    with st.form("classified_form"):
+        product_name = st.text_input("Product / Service Name", "")
+        product_desc = st.text_area("Very Short Description (1–3 sentences)", "")
+        location = st.text_input("Location / Market (optional)", "Online / Worldwide")
+        audience = st.text_area("Ideal Prospect (who should respond?)", "")
+        benefits_text = st.text_area(
+            "Main Benefits (one per line, keep them simple)",
+            placeholder="E.g.\nLose 10 lbs without starving\nWork from home part-time\nGet more leads without cold calling",
+        )
+        contact = st.text_input(
+            "Contact or Link (what should they do?)",
+            "Reply to this ad or visit YourSite.com",
+        )
+
+        awareness = st.selectbox(
+            "Audience Awareness Level",
+            ["Unaware", "Problem-aware", "Solution-aware", "Product-aware", "Most-aware"],
+            index=1,
+        )
+
+        master_style = st.selectbox(
+            "Master Style Influence",
+            [
+                "Gary Halbert",
+                "David Ogilvy",
+                "Dan Kennedy",
+                "Claude Hopkins",
+                "Joe Sugarman",
+                "Eugene Schwartz",
+                "John Carlton",
+                "Jay Abraham",
+                "Robert Bly",
+                "Neville Medhora",
+                "Joanna Wiebe",
+                "Hybrid Mix",
+            ],
+            index=0,
+        )
+
+        num_ads = st.slider("How many ad variations?", min_value=3, max_value=8, value=5)
+
+        submitted = st.form_submit_button("🧲 Generate Classified Ads")
+
+    if not submitted:
+        st.info("Fill in the details above and click **Generate Classified Ads**.")
+        return
+
+    if not product_name or not product_desc or not contact:
+        st.error("Please provide at least a product name, short description, and contact/link.")
+        return
+
+    benefits_list = [b.strip() for b in benefits_text.split("\n") if b.strip()]
+
+    # RULE-BASED CLASSIFIED ADS
+    if engine_choice == "Rule-based":
+        ads = []
+        base_benefit = benefits_list[0] if benefits_list else "get real results without the usual struggle"
+
+        for i in range(num_ads):
+            if i % 3 == 0:
+                headline = f"{base_benefit} – {product_name}"
+                body = f"{product_desc} Ideal for {audience or 'people who are ready for a change'}. {contact}"
+            elif i % 3 == 1 and len(benefits_list) > 1:
+                b2 = benefits_list[1]
+                headline = f"{b2} – Starting with {product_name}"
+                body = f"{product_desc} Located in {location}. {contact}"
+            else:
+                headline = f"{product_name} in {location}: {base_benefit}"
+                body = f"{product_desc} If this sounds like you ({audience or 'motivated and open-minded'}), {contact}"
+
+            ads.append((headline, body))
+
+        st.markdown("### 📝 Classified Ad Variations (Rule-based)")
+        for i, (h, b) in enumerate(ads, start=1):
+            st.markdown(f"**Ad {i}: {h}**")
+            st.markdown(b)
+            st.markdown("---")
+
+        return
+
+    # AI-POWERED CLASSIFIED ADS
+    prompt = f"""
+You are a legendary direct response copywriter specializing in short classified ads, channeling the style of {master_style}.
+
+TASK:
+Write {num_ads} different classified ads for the following offer.
+
+Each ad should be:
+- 1 short headline
+- 1–3 short sentences
+- Optimized for response on classified ad sites (e.g., Craigslist, Locanto, etc.)
+- Clear, simple language
+- Matching this awareness level: {awareness}
+- Ending with a clear next step: "{contact}"
+
+CONTEXT:
+
+Product / Service Name:
+{product_name}
+
+Very Short Description:
+{product_desc}
+
+Location / Market:
+{location}
+
+Ideal Prospect:
+{audience}
+
+Main Benefits:
+{benefits_text}
+
+OUTPUT FORMAT (IMPORTANT):
+
+AD 1:
+Headline: ...
+Body: ...
+
+AD 2:
+Headline: ...
+Body: ...
+
+(Continue up to {num_ads})
+""".strip()
+
+    if engine_choice == "OpenAI":
+        try:
+            ai_text = generate_with_openai(prompt)
+        except Exception as e:
+            st.error(f"OpenAI classified ad generation failed: {e}")
+            return
+        st.markdown("### 🤖 OpenAI Classified Ads")
+        st.markdown(ai_text)
+        return
+
+    if engine_choice == "Gemini":
+        try:
+            ai_text = generate_with_gemini(prompt)
+        except Exception as e:
+            st.error(f"Gemini classified ad generation failed: {e}")
+            return
+        st.markdown("### 🤖 Gemini Classified Ads")
+        st.markdown(ai_text)
+        return
+
+
 # --- Manual & Assets Page ---
 def page_manual_assets():
     st.header("📕 Illuminati AI Copy Master Manual & Assets")
@@ -593,7 +768,6 @@ Each item helps make sure:
             if not preset_name.strip():
                 st.warning("Please enter a preset name before saving.")
             else:
-                # Capture all checklist_* keys
                 snapshot = {}
                 for section_name, items in sections.items():
                     for idx, _ in enumerate(items):
@@ -712,13 +886,13 @@ Use short, direct ads with a clear benefit and a single next step (click, call, 
 """)
         st.info("Write like a human local marketer, not a spam bot. Keep claims realistic and truthful.")
 
-    # --- Quick Campaign Analyzer ---
+    # --- Quick Campaign Analyzer + History ---
     with tabs[3]:
         st.subheader("📊 Quick Campaign Analyzer")
 
         st.markdown("""
-Use this tool to compare basic performance for a single campaign in one channel.
-You can re-use it for **Affiliate**, **Banner/Solo**, or **Classifieds** and record the numbers elsewhere.
+Use this tool to compare basic performance for campaigns in **Affiliate**, **Banner/Solo**, or **Classifieds**.
+Each time you analyze, the result is added to a session-only history below.
 """)
 
         channel = st.selectbox(
@@ -737,21 +911,11 @@ You can re-use it for **Affiliate**, **Banner/Solo**, or **Classifieds** and rec
             revenue = st.number_input("Revenue generated ($)", min_value=0.0, step=1.0)
 
         if st.button("Analyze performance"):
-            if clicks > 0:
-                ctr = None  # CTR not calculated here, but could be if impressions were tracked
-                cpc = spend / clicks if clicks else 0.0
-            else:
-                cpc = 0.0
-
-            if conversions > 0:
-                cpa = spend / conversions if conversions else 0.0
-                epc = revenue / clicks if clicks else 0.0
-                conv_rate = (conversions / clicks * 100) if clicks else 0.0
-            else:
-                cpa = 0.0
-                epc = revenue / clicks if clicks else 0.0 if clicks else 0.0
-                conv_rate = (conversions / clicks * 100) if clicks else 0.0
-
+            # Basic metrics
+            cpc = (spend / clicks) if clicks > 0 else 0.0
+            conv_rate = (conversions / clicks * 100.0) if clicks > 0 else 0.0
+            cpa = (spend / conversions) if conversions > 0 else 0.0
+            epc = (revenue / clicks) if clicks > 0 else 0.0
             roas = (revenue / spend) if spend > 0 else 0.0
 
             st.markdown("#### Results")
@@ -780,6 +944,48 @@ You can re-use it for **Affiliate**, **Banner/Solo**, or **Classifieds** and rec
                 st.success("You are near or above break-even. Tighten the funnel and consider controlled scaling.")
             else:
                 st.success("Strong ROAS. Monitor closely and scale carefully without violating any platform rules.")
+
+            # Save to history
+            entry = {
+                "Channel": channel,
+                "Campaign": campaign_name or "(unnamed)",
+                "Source": source_name or "(unspecified)",
+                "Spend": spend,
+                "Clicks": clicks,
+                "Conversions": conversions,
+                "Revenue": revenue,
+                "CPC": cpc,
+                "CPA": cpa,
+                "EPC": epc,
+                "ConvRate_%": conv_rate,
+                "ROAS": roas,
+            }
+            st.session_state["campaign_history"].append(entry)
+            st.success("Campaign added to this session's history (see below).")
+
+        st.markdown("---")
+        st.subheader("📚 Campaign History (this session)")
+
+        history = st.session_state.get("campaign_history", [])
+        if not history:
+            st.caption("No campaigns analyzed yet. Run the analyzer above to add entries.")
+        else:
+            filter_channel = st.selectbox(
+                "Filter history by channel",
+                options=["(All)"] + sorted(list({h["Channel"] for h in history})),
+                index=0,
+            )
+            if filter_channel != "(All)":
+                filtered = [h for h in history if h["Channel"] == filter_channel]
+            else:
+                filtered = history
+
+            # Display as a simple table
+            st.table(filtered)
+
+            if st.button("Clear campaign history"):
+                st.session_state["campaign_history"] = []
+                st.experimental_rerun()
 
 
 # --- Settings & Integrations Page ---
@@ -841,6 +1047,8 @@ if page == "Dashboard":
     page_dashboard()
 elif page == "Generate Copy":
     page_generate_copy()
+elif page == "Classified Ad Writer":
+    page_classified_writer()
 elif page == "Manual & Assets":
     page_manual_assets()
 elif page == "System Checklist":
@@ -849,3 +1057,4 @@ elif page == "Traffic & Networks":
     page_traffic_networks()
 elif page == "Settings & Integrations":
     page_settings()
+
