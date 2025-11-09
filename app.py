@@ -471,56 +471,25 @@ def generate_rule_based_copy(
         "Hybrid Mix": "a blend of classic direct response aggression and modern conversion copy.",
     }.get(master_style, "classic direct response flavor.")
 
-    if isinstance(audience, str) and audience.strip():
-        audience_short = audience.splitlines()[0].strip()
+  if isinstance(audience, str) and audience.strip():
+    raw_aud = audience.splitlines()[0].strip()
+    # Simple grammar patch: if it doesn't start with "a", "an", or "the", add "someone who is"
+    lowered = raw_aud.lower()
+    if lowered.startswith(("a ", "an ", "the ")):
+        audience_short = raw_aud
     else:
-        audience_short = "struggling to convert attention into actual sales"
+        audience_short = f"someone who is {raw_aud}"
+else:
+    audience_short = "someone who needs what you offer"
 
-    headlines = []
-
-    headlines.append(
-        f"{base_benefit} — without the usual "
-        f"{'stress' if 'without' not in base_benefit.lower() else 'roadblocks'}"
-    )
-
-    headlines.append(
-        f"How to {base_benefit.lower()} with {product_name} "
-        "(Even If You Feel You've Tried Everything)"
-    )
-
-    headlines.append(
-        f"The {product_name} Shortcut That Quietly Turns Cold Traffic into Buyers"
-    )
-
-    first_audience_line = (
-        audience.splitlines()[0] if audience else "ambitious entrepreneurs"
-    )
-    headlines.append(
-        f"New for {first_audience_line}: {product_name} That Finally Makes Your Traffic Pay"
-    )
-
-    headlines.append(
-        f"Use {product_name} to {base_benefit.lower()} in the Next 30 Days... Or Less"
-    )
-
-    if len(benefits_list) > 1:
-        second_benefit = benefits_list[1]
-        headlines.append(
-            f"Turn {second_benefit.lower()} into your unfair advantage with {product_name}"
-        )
-
-    bullets = (
-        "".join([f"- {b}\n" for b in benefits_list])
-        if benefits_list
-        else "- Clear, measurable results\n"
-    )
-
-    sales_copy = f"""[{master_style}-inspired angle – {style_flavor}]
+sales_copy = f"""[{master_style}-inspired angle – {style_flavor}]
 
 ATTENTION
 
 If you're {audience_short}, there's a good chance the problem is not you...
 it's the message you're putting in front of your market.
+"""
+
 
 INTEREST
 
