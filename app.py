@@ -1,4 +1,4 @@
-# 🔺 Illuminati AI Copy Master – Main App with AI Engines + Checklist Presets + Traffic Networks + Classified Ad Writer
+# 🔺 Illuminati AI Copy Master – Full App
 # Author: DeAndre Jefferson
 
 import streamlit as st
@@ -54,10 +54,11 @@ page = st.sidebar.radio(
         "System Checklist",
         "Traffic & Networks",
         "Settings & Integrations",
-    ]
+    ],
 )
 
-# === Helper: API keys from secrets or session ===
+# === Helpers: API keys from secrets or session ===
+
 
 def get_openai_key():
     """Get OpenAI API key from Streamlit secrets or session."""
@@ -84,12 +85,14 @@ def generate_with_openai(prompt: str) -> str:
     if openai is None:
         raise RuntimeError("openai library is not installed.")
 
-    # Legacy-style call (works with most OpenAI Python client versions)
     openai.api_key = api_key
     resp = openai.ChatCompletion.create(
         model="gpt-4",
         messages=[
-            {"role": "system", "content": "You are a world-class direct response copywriter."},
+            {
+                "role": "system",
+                "content": "You are a world-class direct response copywriter.",
+            },
             {"role": "user", "content": prompt},
         ],
         temperature=0.75,
@@ -108,7 +111,6 @@ def generate_with_gemini(prompt: str) -> str:
 
     genai.configure(api_key=api_key)
 
-    # First try a newer model, then gracefully fall back if unsupported
     last_error = None
     for model_name in ["gemini-1.5-flash", "gemini-pro"]:
         try:
@@ -121,9 +123,7 @@ def generate_with_gemini(prompt: str) -> str:
             last_error = e
             continue
 
-    # If we tried all fallbacks and still failed, surface the last error
     raise RuntimeError(f"Gemini generation failed after trying multiple models: {last_error}")
-
 
 
 def generate_rule_based_copy(
@@ -144,15 +144,23 @@ def generate_rule_based_copy(
 
     # Awareness angle
     if awareness == "Unaware":
-        awareness_angle = "lead with curiosity and a bold, intriguing promise that wakes them up."
+        awareness_angle = (
+            "lead with curiosity and a bold, intriguing promise that wakes them up."
+        )
     elif awareness == "Problem-aware":
-        awareness_angle = "agitate the pain they already feel and show you truly understand it."
+        awareness_angle = (
+            "agitate the pain they already feel and show you truly understand it."
+        )
     elif awareness == "Solution-aware":
         awareness_angle = "contrast old frustrating solutions with your better approach."
     elif awareness == "Product-aware":
-        awareness_angle = "stack proof, specifics, and reasons to act today with your product."
+        awareness_angle = (
+            "stack proof, specifics, and reasons to act today with your product."
+        )
     else:  # Most-aware
-        awareness_angle = "reinforce the offer, sweeten the deal, and remove every ounce of risk."
+        awareness_angle = (
+            "reinforce the offer, sweeten the deal, and remove every ounce of risk."
+        )
 
     style_flavor = {
         "Gary Halbert": "raw, emotional, almost letter-style copy that pokes at greed, fear, curiosity, and desire.",
@@ -169,16 +177,24 @@ def generate_rule_based_copy(
         "Hybrid Mix": "a blend of classic direct response aggression and modern conversion copy.",
     }.get(master_style, "classic direct response flavor.")
 
+    # short audience to avoid dumping full avatar blocks
+    if isinstance(audience, str) and audience.strip():
+        audience_short = audience.splitlines()[0].strip()
+    else:
+        audience_short = "struggling to convert attention into actual sales"
+
     headlines = []
 
     # 1. Benefit + without pain
     headlines.append(
-        f"{base_benefit} — without the usual {'stress' if 'without' not in base_benefit.lower() else 'roadblocks'}"
+        f"{base_benefit} — without the usual "
+        f"{'stress' if 'without' not in base_benefit.lower() else 'roadblocks'}"
     )
 
     # 2. How to + benefit
     headlines.append(
-        f"How to {base_benefit.lower()} with {product_name} (Even If You Feel You've Tried Everything)"
+        f"How to {base_benefit.lower()} with {product_name} "
+        "(Even If You Feel You've Tried Everything)"
     )
 
     # 3. Curiosity / shortcut
@@ -187,7 +203,9 @@ def generate_rule_based_copy(
     )
 
     # 4. Direct offer to audience
-    first_audience_line = audience.splitlines()[0] if audience else "ambitious entrepreneurs"
+    first_audience_line = (
+        audience.splitlines()[0] if audience else "ambitious entrepreneurs"
+    )
     headlines.append(
         f"New for {first_audience_line}: {product_name} That Finally Makes Your Traffic Pay"
     )
@@ -205,13 +223,17 @@ def generate_rule_based_copy(
         )
 
     # Bullet list
-    bullets = "".join([f"- {b}\n" for b in benefits_list]) if benefits_list else "- Clear, measurable results\n"
+    bullets = (
+        "".join([f"- {b}\n" for b in benefits_list])
+        if benefits_list
+        else "- Clear, measurable results\n"
+    )
 
     sales_copy = f"""[{master_style}-inspired angle – {style_flavor}]
 
 ATTENTION
 
-If you're {audience or 'struggling to convert attention into actual sales'}, there's a good chance the problem is not you...
+If you're {audience_short}, there's a good chance the problem is not you...
 it's the message you're putting in front of your market.
 
 INTEREST
@@ -243,7 +265,8 @@ def page_dashboard():
     st.title("🔺 Illuminati AI Copy Master")
     st.subheader("AI-Powered Direct Response Control Panel")
 
-    st.markdown("""
+    st.markdown(
+        """
 Welcome to **Illuminati AI Copy Master** — your all-in-one hub for:
 
 - Legendary copywriting frameworks (Ogilvy, Halbert, Kennedy & more)  
@@ -254,12 +277,13 @@ Welcome to **Illuminati AI Copy Master** — your all-in-one hub for:
 Use the navigation on the left to access:
 - **Dashboard** – overview  
 - **Generate Copy** – rule-based + AI engines  
-- **Classified Ad Writer** – short-form classified ads for traffic sites  
-- **Manual & Assets** – generate your Illuminati AI manual package  
+- **Classified Ad Writer** – short-form classified ads  
+- **Manual & Assets** – Illuminati AI manual package  
 - **System Checklist** – launch checklist with presets  
 - **Traffic & Networks** – traffic sources & quick analyzer + history  
-- **Settings & Integrations** – configure engine mode & API keys  
-""")
+- **Settings & Integrations** – engine mode & API keys  
+"""
+    )
 
 
 # --- Generate Copy Page ---
@@ -274,18 +298,17 @@ def page_generate_copy():
         index=["Rule-based", "OpenAI", "Gemini"].index(default_engine),
         help="Rule-based uses local templates only. OpenAI / Gemini use external AI models.",
     )
-    # Keep session in sync
     st.session_state["engine_mode"] = engine_choice
-
     st.markdown(f"**Current engine mode:** `{engine_choice}`")
-
     st.markdown("---")
     st.markdown("### ✍️ Copy Brief")
 
     with st.form("copy_brief_form"):
         product_name = st.text_input("Product / Service Name", "")
         product_desc = st.text_area("Product / Service Description", "")
-        audience = st.text_area("Target Audience (demographics, psychographics, pain points)", "")
+        audience = st.text_area(
+            "Target Audience (demographics, psychographics, pain points)", ""
+        )
         tone = st.selectbox(
             "Desired Tone",
             [
@@ -302,19 +325,11 @@ def page_generate_copy():
             placeholder="E.g.\nLose weight without starving\nSave 5 hours a week\nNo prior experience needed",
         )
         cta = st.text_input("Primary Call To Action (CTA)", "Click here to get started")
-
         awareness = st.selectbox(
             "Audience Awareness Level (Eugene Schwartz)",
-            [
-                "Unaware",
-                "Problem-aware",
-                "Solution-aware",
-                "Product-aware",
-                "Most-aware",
-            ],
+            ["Unaware", "Problem-aware", "Solution-aware", "Product-aware", "Most-aware"],
             index=2,
         )
-
         master_style = st.selectbox(
             "Master Style Influence",
             [
@@ -333,42 +348,22 @@ def page_generate_copy():
             ],
             index=0,
         )
-
         submitted = st.form_submit_button("⚡ Generate Headlines & Sales Copy")
 
     if not submitted:
-        st.info("Fill out the brief and click **Generate** to see headline ideas and a sales copy draft.")
+        st.info(
+            "Fill out the brief and click **Generate** to see headline ideas and a sales copy draft."
+        )
         return
 
     if not product_name or not product_desc:
         st.error("Please provide at least a product name and description.")
         return
 
-    # Parse benefits
+    # Split benefits
     benefits_list = [b.strip() for b in benefits_text.split("\n") if b.strip()]
 
-    # RULE-BASED ENGINE
-    if engine_choice == "Rule-based":
-        headlines, sales_copy = generate_rule_based_copy(
-            product_name=product_name,
-            product_desc=product_desc,
-            audience=audience,
-            tone=tone,
-            benefits_list=benefits_list,
-            cta=cta,
-            awareness=awareness,
-            master_style=master_style,
-        )
-        st.markdown("### 📰 Headline Variations (Rule-based)")
-        for i, h in enumerate(headlines, start=1):
-            st.write(f"{i}. {h}")
-
-        st.markdown("---")
-        st.markdown("### 📜 Sales Copy Draft")
-        st.code(sales_copy, language="markdown")
-        return
-
-    # AI PROMPT (used by OpenAI or Gemini)
+    # Build the base prompt used by OpenAI/Gemini
     prompt = f"""
 You are a legendary direct response copywriter channeling the combined wisdom of:
 
@@ -384,57 +379,72 @@ You are a legendary direct response copywriter channeling the combined wisdom of
 - Joanna Wiebe
 - Neville Medhora
 
-Write in the primary style of: {master_style}.
+Write primarily in the style of: {master_style}.
 
-Use AIDA (Attention, Interest, Desire, Action), PAS (Problem, Agitate, Solve), and FAB (Features, Advantages, Benefits).
-
-TASK:
-
-1. Generate 5-8 strong headlines optimized for cold traffic, respecting this awareness level:
-   {awareness}
-
-2. Then generate a persuasive sales copy draft that:
-   - Hooks hard in the first 2–3 sentences
-   - Agitates the core pains of this audience
-   - Presents {product_name} as the natural solution
-   - Uses some bullets for benefits
-   - Ends with a strong call-to-action: "{cta}"
-
-CONTEXT:
+Use AIDA, PAS, and FAB frameworks.
 
 Product / Service Name:
 {product_name}
 
-Product / Service Description:
+Description:
 {product_desc}
 
-Target Audience:
+Audience:
 {audience}
 
-Desired Tone:
+Tone:
 {tone}
 
-Key Benefits & USPs:
-{benefits_text}
+Benefits:
+{', '.join(benefits_list) if benefits_list else 'N/A'}
 
-OUTPUT FORMAT (IMPORTANT):
+Call to action:
+{cta}
 
-HEADLINES:
-1. ...
-2. ...
-3. ...
-4. ...
-5. ...
-(Up to 8)
+Awareness level:
+{awareness}
 
-SALES COPY:
-[Write the full sales copy here.]
+TASK:
+
+1. Generate 5–8 high-converting headlines optimized for cold traffic.
+2. Then write a long-form sales copy draft that:
+   - Hooks hard in the first 2–3 sentences
+   - Agitates the core pains
+   - Presents the product as the natural solution
+   - Uses bullets for benefits
+   - Ends with the CTA above.
+
+OUTPUT:
+Write the headlines clearly numbered, then the full sales copy below.
 """.strip()
 
-    # OPENAI ENGINE
+    # --- Rule-based Engine ---
+    if engine_choice == "Rule-based":
+        headlines, sales_copy = generate_rule_based_copy(
+            product_name=product_name,
+            product_desc=product_desc,
+            audience=audience,
+            tone=tone,
+            benefits_list=benefits_list,
+            cta=cta,
+            awareness=awareness,
+            master_style=master_style,
+        )
+        st.markdown("### 📰 Headline Variations (Rule-based)")
+        for i, h in enumerate(headlines, start=1):
+            st.write(f"{i}. {h}")
+        st.markdown("---")
+        st.markdown("### 📜 Sales Copy Draft (Rule-based)")
+        st.code(sales_copy, language="markdown")
+        return
+
+    # --- OpenAI Engine ---
     if engine_choice == "OpenAI":
         try:
             ai_text = generate_with_openai(prompt)
+            st.markdown("### 🤖 OpenAI Output")
+            st.markdown(ai_text)
+            return
         except Exception as e:
             st.error(f"OpenAI generation failed: {e}")
             st.info("Falling back to rule-based copy.")
@@ -456,10 +466,7 @@ SALES COPY:
             st.code(sales_copy, language="markdown")
             return
 
-        st.markdown("### 🤖 OpenAI Output")
-        st.markdown(ai_text)
-        return
-        # --- GEMINI ENGINE ---
+    # --- Gemini Engine ---
     if engine_choice == "Gemini":
         try:
             ai_text = generate_with_gemini(prompt)
@@ -467,7 +474,6 @@ SALES COPY:
             st.markdown(ai_text)
             return
         except Exception:
-            # Gemini unavailable → fall back gracefully
             st.warning(
                 "Gemini is currently not available from this environment (model 404s). "
                 "Using rule-based copy instead. You can switch to OpenAI in Settings for AI-generated copy."
@@ -488,16 +494,15 @@ SALES COPY:
             st.markdown("---")
             st.markdown("### 📜 Sales Copy Draft (Rule-based fallback)")
             st.code(sales_copy, language="markdown")
-return
+            return
 
 
-
-# --- Classified Ad Writer Page ---
 # --- Classified Ad Writer Page ---
 def page_classified_writer():
     st.header("📢 Classified Ad Writer")
 
-    st.markdown("""
+    st.markdown(
+        """
 Generate short, punchy classified ads for:
 
 - Free classified sites (Craigslist, Locanto, etc.)  
@@ -505,7 +510,8 @@ Generate short, punchy classified ads for:
 - Simple text-based placements  
 
 You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
-""")
+"""
+    )
 
     default_engine = st.session_state.get("engine_mode", "Rule-based")
     engine_choice = st.selectbox(
@@ -521,13 +527,13 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
         product_desc = st.text_area(
             "Very Short Description (1–3 sentences)",
             "",
-            help="Keep this tight. We'll trim it further so it fits classified formats."
+            help="Keep this tight. We'll trim it further so it fits classified formats.",
         )
         location = st.text_input("Location / Market (optional)", "Online / Worldwide")
         audience = st.text_area(
             "Ideal Prospect (who should respond?)",
             "",
-            help="One or two lines max. If you paste a long avatar, we'll only use the first line."
+            help="One or two lines max. If you paste a long avatar, we'll only use the first line.",
         )
         benefits_text = st.text_area(
             "Main Benefits (one per line, keep them simple)",
@@ -563,7 +569,9 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
             index=0,
         )
 
-        num_ads = st.slider("How many ad variations?", min_value=3, max_value=8, value=5)
+        num_ads = st.slider(
+            "How many ad variations?", min_value=3, max_value=8, value=5
+        )
 
         submitted = st.form_submit_button("🧲 Generate Classified Ads")
 
@@ -572,24 +580,29 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
         return
 
     if not product_name or not product_desc or not contact:
-        st.error("Please provide at least a product name, short description, and contact/link.")
+        st.error(
+            "Please provide at least a product name, short description, and contact/link."
+        )
         return
 
-    # --- Shared helpers ---
+    # Shared helpers
     benefits_list = [b.strip() for b in benefits_text.split("\n") if b.strip()]
+    audience_short = (
+        audience.splitlines()[0].strip()
+        if isinstance(audience, str) and audience.strip()
+        else "people who are ready for a change"
+    )
 
-    # Use only the first line of any long avatar blob
-    audience_short = audience.splitlines()[0].strip() if audience.strip() else "people who are ready for a change"
-
-    # Shorten description to keep ads tight
     desc_short = product_desc.strip()
     if len(desc_short) > 220:
         desc_short = desc_short[:217] + "..."
 
-    base_benefit = benefits_list[0] if benefits_list else "get real results without the usual struggle"
+    base_benefit = (
+        benefits_list[0] if benefits_list else "get real results without the usual struggle"
+    )
     second_benefit = benefits_list[1] if len(benefits_list) > 1 else None
 
-    # Map master to a simple flavor hint
+    # style hint (for AI engines)
     if master_style == "Gary Halbert":
         style_hint = "emotional, direct-mail style with a strong hook and clear self-interest."
     elif master_style == "David Ogilvy":
@@ -652,9 +665,10 @@ You can use **Rule-based**, **OpenAI**, or **Gemini** as the engine.
 
         return
 
-    # --- AI-POWERED CLASSIFIED ADS ---
+    # AI-POWERED CLASSIFIED ADS
     prompt = f"""
-You are a legendary direct response copywriter specializing in short classified ads, channeling the style of {master_style}.
+You are a legendary direct response copywriter specializing in short classified ads,
+channeling the style of {master_style}.
 
 Write in a way that feels like: {style_hint}
 
@@ -665,7 +679,7 @@ Each ad must:
 - Have ONE short headline
 - Have 1–3 short sentences of body copy
 - Be optimized for response on classified ad sites (e.g., Craigslist, Locanto, etc.)
-- Use clear, simple, human language (no corporate jargon)
+- Use clear, simple, human language
 - Match this awareness level: {awareness}
 - End with this clear next step: "{contact}"
 
@@ -686,7 +700,7 @@ Ideal Prospect (short):
 Main Benefits:
 {benefits_text}
 
-OUTPUT FORMAT (IMPORTANT):
+OUTPUT FORMAT:
 
 AD 1:
 Headline: ...
@@ -696,122 +710,47 @@ AD 2:
 Headline: ...
 Body: ...
 
-(Continue up to {num_ads})
-""".strip()
-
-        # --- Gemini Engine ---
-if engine_choice == "Gemini":
-    try:
-        ai_text = generate_with_gemini(prompt)
-        st.markdown("### 🤖 Gemini Output")
-        st.markdown(ai_text)
-        return
-    except Exception:
-        # Gemini unavailable → fall back gracefully
-        st.warning(
-            "Gemini is currently not available from this environment (model 404s). "
-            "Using rule-based copy instead. You can switch to OpenAI in Settings for AI-generated copy."
-        )
-        headlines, sales_copy = generate_rule_based_copy(
-            product_name=product_name,
-            product_desc=product_desc,
-            audience=audience,
-            tone=tone,
-            benefits_list=benefits_list,
-            cta=cta,
-            awareness=awareness,
-            master_style=master_style,
-        )
-        st.markdown("### 📰 Headline Variations (Rule-based fallback)")
-        for i, h in enumerate(headlines, start=1):
-            st.write(f"{i}. {h}")
-        st.markdown("---")
-        st.markdown("### 📜 Sales Copy Draft (Rule-based fallback)")
-        st.code(sales_copy, language="markdown")
-        return
-
-
-
-
-    # AI-POWERED CLASSIFIED ADS
-    prompt = f"""
-You are a legendary direct response copywriter specializing in short classified ads, channeling the style of {master_style}.
-
-TASK:
-Write {num_ads} different classified ads for the following offer.
-
-Each ad should be:
-- 1 short headline
-- 1–3 short sentences
-- Optimized for response on classified ad sites (e.g., Craigslist, Locanto, etc.)
-- Clear, simple language
-- Matching this awareness level: {awareness}
-- Ending with a clear next step: "{contact}"
-
-CONTEXT:
-
-Product / Service Name:
-{product_name}
-
-Very Short Description:
-{product_desc}
-
-Location / Market:
-{location}
-
-Ideal Prospect:
-{audience}
-
-Main Benefits:
-{benefits_text}
-
-OUTPUT FORMAT (IMPORTANT):
-
-AD 1:
-Headline: ...
-Body: ...
-
-AD 2:
-Headline: ...
-Body: ...
-
-(Continue up to {num_ads})
+(and so on)
 """.strip()
 
     if engine_choice == "OpenAI":
         try:
             ai_text = generate_with_openai(prompt)
+            st.markdown("### 🤖 OpenAI Classified Ads")
+            st.markdown(ai_text)
+            return
         except Exception as e:
             st.error(f"OpenAI classified ad generation failed: {e}")
             return
-        st.markdown("### 🤖 OpenAI Classified Ads")
-        st.markdown(ai_text)
-        return
 
     if engine_choice == "Gemini":
         try:
             ai_text = generate_with_gemini(prompt)
-        except Exception as e:
-            st.error(f"Gemini classified ad generation failed: {e}")
+            st.markdown("### 🤖 Gemini Classified Ads")
+            st.markdown(ai_text)
             return
-        st.markdown("### 🤖 Gemini Classified Ads")
-        st.markdown(ai_text)
-        return
+        except Exception:
+            st.warning(
+                "Gemini is currently not available from this environment (model 404s). "
+                "Switch to Rule-based or OpenAI for classified ads."
+            )
+            return
 
 
 # --- Manual & Assets Page ---
 def page_manual_assets():
     st.header("🔺 Illuminati AI Copy Master Manual & Assets")
-    st.markdown("""
+    st.markdown(
+        """
 Generate your **Illuminati AI Copy Master Manual** package:
 
 - PDF manual (lite version for now)  
 - Bundled ZIP package ready to download  
 
 Click the button below to generate the package.
-""")
+"""
+    )
 
-    # Import the generator lazily so we see clear errors if something is wrong
     try:
         from generate_illuminati_ai_package import main as generate_illuminati_package_main
     except Exception as e:
@@ -840,7 +779,8 @@ Click the button below to generate the package.
 def page_system_checklist():
     st.header("✅ System Checklist")
 
-    st.markdown("""
+    st.markdown(
+        """
 Use this checklist before you send real traffic to your funnel.
 
 Each item helps make sure:
@@ -848,7 +788,8 @@ Each item helps make sure:
 - Your pages work  
 - Your tracking is live  
 - Your traffic isn’t being wasted  
-""")
+"""
+    )
 
     sections = {
         "Offer & Positioning": [
@@ -885,7 +826,6 @@ Each item helps make sure:
     total_items = 0
     completed_items = 0
 
-    # Render checklist with stateful checkboxes
     for section_name, items in sections.items():
         st.subheader(section_name)
         for idx, item in enumerate(items):
@@ -896,19 +836,26 @@ Each item helps make sure:
                 completed_items += 1
         st.markdown("---")
 
-    # Progress summary
     percent = int((completed_items / total_items) * 100) if total_items > 0 else 0
-    st.markdown(f"### 📊 Completion: **{completed_items} / {total_items}** items checked ({percent}%)")
+    st.markdown(
+        f"### 📊 Completion: **{completed_items} / {total_items}** items checked ({percent}%)"
+    )
 
     if percent < 50:
-        st.info("You’re still early in the setup. Work through the items above before scaling traffic.")
+        st.info(
+            "You’re still early in the setup. Work through the items above before scaling traffic."
+        )
     elif percent < 100:
-        st.success("You’re getting close. Tighten any remaining items before pushing harder on ads.")
+        st.success(
+            "You’re getting close. Tighten any remaining items before pushing harder on ads."
+        )
     else:
         st.balloons()
-        st.success("All checklist items complete. You’re ready to carefully test and scale traffic.")
+        st.success(
+            "All checklist items complete. You’re ready to carefully test and scale traffic."
+        )
 
-    # --- Preset Save/Load ---
+    # Preset Save/Load
     st.markdown("---")
     st.markdown("### 💾 Checklist Presets (this session only)")
 
@@ -938,11 +885,11 @@ Each item helps make sure:
                     st.session_state[key] = False
             st.experimental_rerun()
 
-    # Load preset
     if st.session_state["checklist_presets"]:
         load_name = st.selectbox(
             "Load preset",
-            options=["(Select preset)"] + list(st.session_state["checklist_presets"].keys()),
+            options=["(Select preset)"]
+            + list(st.session_state["checklist_presets"].keys()),
             index=0,
         )
         if load_name != "(Select preset)":
@@ -953,13 +900,16 @@ Each item helps make sure:
                 st.success(f"Preset '{load_name}' loaded.")
                 st.experimental_rerun()
     else:
-        st.caption("No presets saved yet. Save one above to reuse this configuration in this session.")
+        st.caption(
+            "No presets saved yet. Save one above to reuse this configuration in this session."
+        )
 
 
 # --- Traffic & Networks Page ---
 def page_traffic_networks():
     st.header("🚦 Traffic & Networks")
-    st.markdown("""
+    st.markdown(
+        """
 This section gives you a **starting map** of places you can get traffic without heavy approval processes,
 plus a quick analyzer so you can compare results from:
 
@@ -968,19 +918,23 @@ plus a quick analyzer so you can compare results from:
 - Free classified ad sites  
 
 Always double-check each platform’s current policies and terms — they can change anytime.
-""")
+"""
+    )
 
-    tabs = st.tabs([
-        "Affiliate Networks",
-        "Banner & Solo Ad Networks",
-        "Free Classified Sites",
-        "Quick Campaign Analyzer",
-    ])
+    tabs = st.tabs(
+        [
+            "Affiliate Networks",
+            "Banner & Solo Ad Networks",
+            "Free Classified Sites",
+            "Quick Campaign Analyzer",
+        ]
+    )
 
-    # --- Affiliate Networks ---
+    # Affiliate Networks
     with tabs[0]:
         st.subheader("🌐 Affiliate Networks (Generally Easy to Join)")
-        st.markdown("""
+        st.markdown(
+            """
 These networks typically allow signups with standard registration (no special invite required).  
 Always review their current rules and verticals allowed.
 
@@ -992,39 +946,49 @@ Always review their current rules and verticals allowed.
 - ShareASale  
 - CJ (Commission Junction) – often requires approval per advertiser  
 - PartnerStack (for SaaS offers)  
-""")
-        st.info("Use these to find offers that match your list, niche, or funnel theme. Start with a small test.")
+"""
+        )
+        st.info(
+            "Use these to find offers that match your list, niche, or funnel theme. Start with a small test."
+        )
 
-    # --- Banner & Solo Ad Networks ---
+    # Banner & Solo Ad Networks
     with tabs[1]:
         st.subheader("📢 Banner & Solo Ad Traffic (Lower Barrier Platforms)")
 
         st.markdown("**Solo Ad Marketplaces:**")
-        st.markdown("""
+        st.markdown(
+            """
 - Udimi  
 - TrafficForMe  
 - SoloAdsX / similar brokers  
 - Individual list sellers (research reputation carefully)  
-""")
+"""
+        )
 
-        st.markdown("**Banner / Display Ad Networks (lower barrier than Google/Meta, but still have policies):**")
-        st.markdown("""
+        st.markdown(
+            "**Banner / Display Ad Networks (lower barrier than Google/Meta, but still have policies):**"
+        )
+        st.markdown(
+            """
 - PropellerAds  
 - Adsterra  
 - HilltopAds  
 - RichAds  
 - 7Search PPC  
-""")
+"""
+        )
 
         st.warning(
             "Even if signup is easy, you are still responsible for compliance and truthful advertising. "
             "Avoid banned content and always follow their policies."
         )
 
-    # --- Free Classified Sites ---
+    # Free Classified Sites
     with tabs[2]:
         st.subheader("📋 Free Classified Ad Sites (High or Notable Traffic)")
-        st.markdown("""
+        st.markdown(
+            """
 These platforms often allow free or low-cost classified ads. Availability and rules can vary by country.
 
 - Craigslist (many regions)  
@@ -1037,17 +1001,22 @@ These platforms often allow free or low-cost classified ads. Availability and ru
 - Kijiji (CA)  
 
 Use short, direct ads with a clear benefit and a single next step (click, call, opt in).
-""")
-        st.info("Write like a human local marketer, not a spam bot. Keep claims realistic and truthful.")
+"""
+        )
+        st.info(
+            "Write like a human local marketer, not a spam bot. Keep claims realistic and truthful."
+        )
 
-    # --- Quick Campaign Analyzer + History ---
+    # Quick Campaign Analyzer + History
     with tabs[3]:
         st.subheader("📊 Quick Campaign Analyzer")
 
-        st.markdown("""
+        st.markdown(
+            """
 Use this tool to compare basic performance for campaigns in **Affiliate**, **Banner/Solo**, or **Classifieds**.
 Each time you analyze, the result is added to a session-only history below.
-""")
+"""
+        )
 
         channel = st.selectbox(
             "Channel Type",
@@ -1059,13 +1028,18 @@ Each time you analyze, the result is added to a session-only history below.
             campaign_name = st.text_input("Campaign name / label", "")
             source_name = st.text_input("Traffic source / vendor / site", "")
         with col2:
-            spend = st.number_input("Ad spend / cost ($)", min_value=0.0, step=1.0)
+            spend = st.number_input(
+                "Ad spend / cost ($)", min_value=0.0, step=1.0
+            )
             clicks = st.number_input("Clicks", min_value=0, step=1)
-            conversions = st.number_input("Conversions (leads or sales)", min_value=0, step=1)
-            revenue = st.number_input("Revenue generated ($)", min_value=0.0, step=1.0)
+            conversions = st.number_input(
+                "Conversions (leads or sales)", min_value=0, step=1
+            )
+            revenue = st.number_input(
+                "Revenue generated ($)", min_value=0.0, step=1.0
+            )
 
         if st.button("Analyze performance"):
-            # Basic metrics
             cpc = (spend / clicks) if clicks > 0 else 0.0
             conv_rate = (conversions / clicks * 100.0) if clicks > 0 else 0.0
             cpa = (spend / conversions) if conversions > 0 else 0.0
@@ -1091,15 +1065,22 @@ Each time you analyze, the result is added to a session-only history below.
             st.write(f"- ROAS (Return on ad spend): {roas:.2f}x")
 
             if roas < 1 and conversions == 0:
-                st.info("This test lost money and produced no conversions. Consider changing the offer, angle, or traffic source.")
+                st.info(
+                    "This test lost money and produced no conversions. Consider changing the offer, angle, or traffic source."
+                )
             elif roas < 1:
-                st.info("ROAS is below break-even. Look for ways to improve your messaging, targeting, or back-end monetization.")
+                st.info(
+                    "ROAS is below break-even. Look for ways to improve your messaging, targeting, or back-end monetization."
+                )
             elif roas >= 1 and roas < 2:
-                st.success("You are near or above break-even. Tighten the funnel and consider controlled scaling.")
+                st.success(
+                    "You are near or above break-even. Tighten the funnel and consider controlled scaling."
+                )
             else:
-                st.success("Strong ROAS. Monitor closely and scale carefully without violating any platform rules.")
+                st.success(
+                    "Strong ROAS. Monitor closely and scale carefully without violating any platform rules."
+                )
 
-            # Save to history
             entry = {
                 "Channel": channel,
                 "Campaign": campaign_name or "(unnamed)",
@@ -1122,11 +1103,15 @@ Each time you analyze, the result is added to a session-only history below.
 
         history = st.session_state.get("campaign_history", [])
         if not history:
-            st.caption("No campaigns analyzed yet. Run the analyzer above to add entries.")
+            st.caption(
+                "No campaigns analyzed yet. Run the analyzer above to add entries."
+            )
         else:
             filter_channel = st.selectbox(
                 "Filter history by channel",
-                options=["(All)"] + sorted(list({h["Channel"] for h in history})),
+                options=["(All)"] + sorted(
+                    list({h["Channel"] for h in history})
+                ),
                 index=0,
             )
             if filter_channel != "(All)":
@@ -1134,7 +1119,6 @@ Each time you analyze, the result is added to a session-only history below.
             else:
                 filtered = history
 
-            # Display as a simple table
             st.table(filtered)
 
             if st.button("Clear campaign history"):
@@ -1150,7 +1134,9 @@ def page_settings():
     engine_mode = st.radio(
         "Choose your default generation engine:",
         ["Rule-based", "OpenAI", "Gemini"],
-        index=["Rule-based", "OpenAI", "Gemini"].index(st.session_state["engine_mode"]),
+        index=["Rule-based", "OpenAI", "Gemini"].index(
+            st.session_state["engine_mode"]
+        ),
         help="Rule-based uses built-in templates with no tokens. OpenAI/Gemini use external APIs.",
     )
 
@@ -1186,14 +1172,22 @@ def page_settings():
     st.write(f"**Engine mode:** `{st.session_state['engine_mode']}`")
 
     if st.session_state["engine_mode"] == "OpenAI":
-        st.write("**OpenAI key set:**", "✅ Yes" if st.session_state["openai_api_key"] else "❌ No")
+        st.write(
+            "**OpenAI key set:**",
+            "✅ Yes" if st.session_state["openai_api_key"] else "❌ No",
+        )
     elif st.session_state["engine_mode"] == "Gemini":
-        st.write("**Gemini key set:**", "✅ Yes" if st.session_state["gemini_api_key"] else "❌ No")
+        st.write(
+            "**Gemini key set:**",
+            "✅ Yes" if st.session_state["gemini_api_key"] else "❌ No",
+        )
 
-    st.markdown("""
+    st.markdown(
+        """
 *Note:* Keys entered here are only kept in memory for this session.
 For long-term, secure storage on Streamlit Cloud, use **Settings → Secrets** in the app dashboard.
-""")
+"""
+    )
 
 
 # --- Router ---
