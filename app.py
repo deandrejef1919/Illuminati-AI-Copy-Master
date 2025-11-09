@@ -504,7 +504,80 @@ Click the button below to generate the package.
 # --- System Checklist Page ---
 def page_system_checklist():
     st.header("✅ System Checklist")
-    st.info("This is a placeholder. Later you'll track funnel readiness and launch status here.")
+
+    st.markdown("""
+Use this checklist before you send real traffic to your funnel.
+
+Each item helps make sure:
+- Your offer is clear  
+- Your pages work  
+- Your tracking is live  
+- Your traffic isn’t being wasted  
+    """)
+
+    # Define checklist items grouped by section
+    sections = {
+        "Offer & Positioning": [
+            "Core offer is clearly defined (who it's for, what it does, main promise).",
+            "Main benefit/headline is written and tested for clarity.",
+            "Guarantee / risk reversal is decided (or intentionally omitted).",
+            "Price and payment structure are final (no ‘I’ll decide later’).",
+        ],
+        "Funnel Assets": [
+            "Opt-in page is built and loads correctly on desktop & mobile.",
+            "Thank-you / bridge page is built and clearly sets the next step.",
+            "Main sales page (or VSL) is live and has a clear CTA.",
+            "Email follow-up sequence (at least 3–5 emails) is drafted and scheduled.",
+        ],
+        "Tracking & Tech": [
+            "Primary tracking pixels / tags are installed (if applicable).",
+            "UTM parameters or tracking links are set for each traffic source.",
+            "Test opt-in completed and confirmed the lead shows up where expected.",
+            "Test ‘purchase’ or main conversion flow works end-to-end.",
+        ],
+        "Traffic Plan": [
+            "At least one traffic source is chosen (Solo Ads / Banners / Classifieds / etc.).",
+            "Budget for test phase is defined and affordable.",
+            "Creative variations are prepared (headlines, angles, images).",
+            "Schedule for checking stats (daily/weekly) is set.",
+        ],
+        "Compliance & Honesty": [
+            "All claims in the copy are truthful and not misleading.",
+            "Required disclaimers / terms / privacy pages are present (if needed).",
+            "Affiliate / promotional relationships are disclosed where required.",
+        ],
+    }
+
+    # Render checklist with stateful checkboxes
+    total_items = 0
+    completed_items = 0
+
+    for section_name, items in sections.items():
+        st.subheader(section_name)
+        for item in items:
+            key = f"checklist_{section_name}_{item}"  # unique key per item
+            checked = st.checkbox(item, key=key)
+            total_items += 1
+            if checked:
+                completed_items += 1
+
+        st.markdown("---")
+
+    # Progress summary
+    if total_items > 0:
+        percent = int((completed_items / total_items) * 100)
+    else:
+        percent = 0
+
+    st.markdown(f"### 📊 Completion: **{completed_items} / {total_items}** items checked ({percent}%)")
+
+    if percent < 50:
+        st.info("You’re still early in the setup. Work through the items above before scaling traffic.")
+    elif percent < 100:
+        st.success("You’re getting close. Tighten any remaining items before pushing harder on ads.")
+    else:
+        st.balloons()
+        st.success("All checklist items complete. You’re ready to carefully test and scale traffic.")
 
 
 # --- Settings & Integrations Page ---
