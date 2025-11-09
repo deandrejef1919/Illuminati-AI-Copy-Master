@@ -1,12 +1,8 @@
-# 🔺 Illuminati AI Copy Master – Main Streamlit App
+# 🔺 Illuminati AI Copy Master – Minimal Stable App
 # Author: DeAndre Jefferson
-# Date: 2025
-# Purpose: AI-powered copywriting & marketing dashboard
 
 import streamlit as st
 import os
-# NOTE: we will import the generator lazily inside the Manual & Assets page
-
 
 # --- Global UI Setup ---
 st.set_page_config(
@@ -37,26 +33,39 @@ def page_dashboard():
 
     st.markdown("""
     Welcome to **Illuminati AI Copy Master** — your all-in-one hub for:
-    - Legendary copywriting frameworks (Ogilvy, Halbert, Kennedy & more)
-    - AI-enhanced generation for headlines, sales letters, and funnels
-    - Integrated analytics and A/B simulation
-    - Instant PDF and ZIP export of full sales systems  
+
+    - Legendary copywriting frameworks (Ogilvy, Halbert, Kennedy & more)  
+    - AI-enhanced generation for headlines, sales letters, and funnels  
+    - Built-in manual & asset generator (PDF + ZIP)  
+
     ---
-    **Tip:** Visit the *Manual & Assets* section to forge your personal Illuminati AI SOP Manual.
+    Use the navigation on the left to access:
+    - **Dashboard** – overview  
+    - **Generate Copy** – (placeholder for copy engine)  
+    - **Manual & Assets** – generate your Illuminati AI manual package  
+    - **System Checklist** – launch checklist (placeholder)  
+    - **Settings & Integrations** – integration notes (placeholder)  
     """)
+
+# --- Generate Copy Page (simple placeholder for now) ---
+def page_generate_copy():
+    st.header("🧠 Generate Copy")
+    st.info("This section is a placeholder. The copy generation engine will be wired here later.")
+    st.write("For now, use the **Manual & Assets** section to generate your SOP manual package.")
 
 # --- Manual & Assets Page ---
 def page_manual_assets():
-    st.header("🔺 Illuminati AI Copy Master Manual & Assets")
+    st.header("📕 Illuminati AI Copy Master Manual & Assets")
     st.markdown("""
     Generate your **Illuminati AI Copy Master Manual** package:
 
-    - Illustrated PDF manual (SOP + Master Appendix)  
-    - Matching high-res cover image  
+    - PDF manual (simple version for now)  
     - Bundled ZIP package ready to download  
+
+    Click the button below to generate the package.
     """)
 
-    # Try to import the generator module here so we can see real errors
+    # Import the generator lazily so we see clear errors if something is wrong
     try:
         from generate_illuminati_ai_package import main as generate_illuminati_package_main
     except Exception as e:
@@ -64,7 +73,7 @@ def page_manual_assets():
         st.stop()
 
     if st.button("🔺 Forge The Manual of Persuasion"):
-        with st.spinner("Forging the manual, cover, and ZIP package..."):
+        with st.spinner("Forging the manual and ZIP package..."):
             generate_illuminati_package_main()
         st.success("✅ The manual package has been forged successfully.")
 
@@ -80,22 +89,22 @@ def page_manual_assets():
         else:
             st.error("Package ZIP not found. Please rerun the generator.")
 
-
-# --- Placeholder Pages ---
-def page_generate_copy():
-    st.header("🧠 Generate Copy")
-    st.info("This section will soon include AI headline & sales copy generation.")
-
+# --- System Checklist Page (placeholder) ---
 def page_system_checklist():
     st.header("✅ System Checklist")
-    st.info("Use this checklist to ensure all Illuminati AI features are ready.")
+    st.info("This is a placeholder. Later you'll track funnel readiness and launch status here.")
 
+# --- Settings & Integrations Page (placeholder) ---
 def page_settings():
     st.header("⚙️ Settings & Integrations")
     st.markdown("""
-    - Configure API keys for OpenAI or Gemini
-    - Enable rule-based mode to avoid token usage  
-    - Adjust AI and system performance options  
+    This is a placeholder page for future settings, including:
+
+    - OpenAI / Gemini API configuration  
+    - Rule-based vs AI engine toggles  
+    - Affiliate & ESP integration options  
+
+    For now, no configuration is required. The app runs in minimal mode.
     """)
 
 # --- Router ---
@@ -109,3 +118,4 @@ elif page == "System Checklist":
     page_system_checklist()
 elif page == "Settings & Integrations":
     page_settings()
+
