@@ -3,6 +3,15 @@
 
 import streamlit as st
 import os
+# --- Session Defaults ---
+if "engine_mode" not in st.session_state:
+    st.session_state["engine_mode"] = "Rule-based"  # or "OpenAI" / "Gemini"
+
+if "openai_api_key" not in st.session_state:
+    st.session_state["openai_api_key"] = ""
+
+if "gemini_api_key" not in st.session_state:
+    st.session_state["gemini_api_key"] = ""
 
 # --- Global UI Setup ---
 st.set_page_config(
