@@ -1,5 +1,6 @@
 import streamlit as st
 import textwrap
+import re
 from typing import List, Tuple, Dict
 
 # Try to import requests for Zapier webhooks (fail gracefully if missing)
@@ -44,7 +45,9 @@ body, .stApp {
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: #f5d76e;
-    text-shadow: 0 0 12px rgba(245, 215, 110, 0.6);
+    text-shadow:
+        0 0 14px rgba(245, 215, 110, 0.95),
+        0 0 26px rgba(155, 17, 30, 0.80);
 }
 .illuminati-subtitle {
     font-size: 0.95rem;
@@ -292,6 +295,110 @@ def send_zapier_webhook(url: str, payload: Dict) -> Tuple[bool, str]:
         return True, f"Webhook sent. HTTP status: {resp.status_code}"
     except Exception as e:
         return False, f"Error sending webhook: {e}"
+
+
+# -------------------------
+# Heuristic copy scoring
+# -------------------------
+
+EMOTIONAL_TRIGGERS = [
+    "secret", "secrets", "discover", "finally", "weird", "shocking", "hidden",
+    "proven", "guaranteed", "guarantee", "instantly", "suddenly", "fear",
+    "greed", "curiosity", "strange", "little-known", "breakthrough", "odd",
+    "easy", "fast", "quick", "now", "today", "limited", "scarcity",
+    "deadline", "risk-free", "no risk", "exclusive",
+]
+
+CTA_PHRASES = [
+    "click here", "tap here", "join now", "buy now", "order now", "get started",
+    "sign up", "enroll now", "start now", "act now", "claim your", "grab your",
+]
+
+STRUCTURE_MARKERS = [
+    "attention", "interest", "desire", "action",  # AIDA
+    "problem", "agitate", "solution",            # PAS
+    "guarantee", "testimonial", "proof", "bonus", "faq",
+]
+
+def analyze_copy_score(copy_text: str) -> Dict[str, float]:
+    """
+    Very rough heuristic scoring from 1–100 on likely conversion strength.
+    This is NOT a true predictive model, just a structured gut-check.
+    """
+
+    if not copy_text or not copy_text.strip():
+        return {
+            "total_score": 0.0,
+            "length_score": 0.0,
+            "emotion_score": 0.0,
+            "structure_score": 0.0,
+            "cta_score": 0.0,
+            "specificity_score": 0.0,
+        }
+
+    text = copy_text.strip()
+    words = re.findall(r"\w+", text)
+    n_words = len(words)
+
+    # 1) Length score (very rough – ideal 200–1500 words)
+    if n_words < 80:
+        length_score = 20.0
+    elif n_words < 200:
+        # ramp up
+        length_score = 20 + (n_words - 80) / (200 - 80) * 40  # up to 60
+    elif n_words <= 1500:
+        length_score = 60 + min((n_words - 200) / (1500 - 200) * 30, 30)  # up to 90
+    else:
+        # penalize too long
+        over = min((n_words - 1500) / 1500, 1.0)
+        length_score = 90 - 30 * over  # down to 60
+
+    # 2) Emotional trigger score
+    lower = text.lower()
+    emo_hits = sum(1 for trig in EMOTIONAL_TRIGGERS if trig in lower)
+    # Cap at 15 hits
+    emo_score = min(emo_hits / 15.0, 1.0) * 100
+
+    # 3) Structure markers (AIDA / PAS / proof cues)
+    struct_hits = sum(1 for marker in STRUCTURE_MARKERS if marker in lower)
+    struct_score = min(struct_hits / 8.0, 1.0) * 100
+
+    # 4) CTA score
+    cta_hits = sum(1 for phrase in CTA_PHRASES if phrase in lower)
+    if "http://" in lower or "https://" in lower:
+        cta_hits += 1
+    cta_score = min(cta_hits / 4.0, 1.0) * 100
+
+    # 5) Specificity: digits, %, $, timeframes
+    digits = len(re.findall(r"\d", text))
+    percents = len(re.findall(r"\d+%", text))
+    dollars = len(re.findall(r"\$", text))
+    timeframes = len(re.findall(r"\bday\b|\bdays\b|\bweek\b|\bweeks\b|\bmonth\b|\bmonths\b", lower))
+
+    spec_raw = digits + percents + dollars + timeframes
+    spec_score = min(spec_raw / 15.0, 1.0) * 100
+
+    # Weighted total
+    # Length 20%, emotion 25%, structure 20%, CTA 15%, specificity 20%
+    total = (
+        length_score * 0.20 +
+        emo_score * 0.25 +
+        struct_score * 0.20 +
+        cta_score * 0.15 +
+        spec_score * 0.20
+    )
+
+    # Normalize to 0–100
+    total_score = max(1.0, min(100.0, total))
+
+    return {
+        "total_score": round(total_score, 1),
+        "length_score": round(length_score, 1),
+        "emotion_score": round(emo_score, 1),
+        "structure_score": round(struct_score, 1),
+        "cta_score": round(cta_score, 1),
+        "specificity_score": round(spec_score, 1),
+    }
 
 
 # -------------------------
@@ -871,6 +978,27 @@ def page_generate_copy():
     st.markdown("### 📜 Sales Copy Draft")
     st.markdown(sales_copy)
 
+    # Heuristic conversion score for this draft
+    st.markdown("---")
+    st.markdown("### 🔍 Conversion Potential (Heuristic Score)")
+
+    analysis = analyze_copy_score(sales_copy)
+    col_a, col_b, col_c = st.columns(3)
+    with col_a:
+        st.metric("Overall Score", f"{analysis['total_score']} / 100")
+        st.metric("Length & Depth", f"{analysis['length_score']:.1f}")
+    with col_b:
+        st.metric("Emotional Triggers", f"{analysis['emotion_score']:.1f}")
+        st.metric("Structure (AIDA / PAS)", f"{analysis['structure_score']:.1f}")
+    with col_c:
+        st.metric("CTAs & Closers", f"{analysis['cta_score']:.1f}")
+        st.metric("Specificity & Proof", f"{analysis['specificity_score']:.1f}")
+
+    st.caption(
+        "This is a heuristic score based on length, emotional words, structure cues, CTAs, and specificity. "
+        "Always test in the real world — the market is the final judge."
+    )
+
     st.markdown("---")
     st.caption(
         "Remember Ogilvy: “The consumer isn’t a moron, she’s your wife.” "
@@ -1180,6 +1308,11 @@ def page_traffic_networks():
             "url": "https://www.7searchppc.com/",
             "note": "Self-service PPC network with multiple verticals.",
         },
+        {
+            "name": "20DollarBanners",
+            "url": "https://www.20dollarbanners.com/",
+            "note": "Affordable custom banner design service you can use for your display campaigns.",
+        },
     ]
 
     for plat in traffic_platforms:
@@ -1466,6 +1599,124 @@ def page_system_checklist():
     st.caption("Legend wisdom: money is made in preparation and follow-up, not in guessing.")
 
 
+def page_copy_analyzer():
+    render_header()
+    st.subheader("🧮 Copy Analyzer & Variant Comparer")
+
+    st.markdown(
+        """
+        Paste any copy (headline, email, sales page, VSL script, ad) and get a heuristic
+        **Conversion Potential Score (1–100)** based on:
+        - Length & depth
+        - Emotional trigger words
+        - AIDA / PAS structure cues
+        - CTAs & closing drive
+        - Specific numbers, time frames, and proof
+
+        This is not a real predictive AI model — it’s a structured gut-check tool.
+        Always validate with live traffic.
+        """
+    )
+
+    mode = st.radio(
+        "Mode",
+        ["Single Copy Score", "Compare Two Variants (A/B)"],
+        index=0,
+    )
+
+    if mode == "Single Copy Score":
+        text = st.text_area(
+            "Paste your copy here",
+            "",
+            height=260,
+            placeholder="Paste your sales letter, email, ad, or headline + intro here...",
+        )
+
+        if st.button("🔍 Analyze Copy"):
+            if not text.strip():
+                st.error("Please paste some copy first.")
+                return
+
+            analysis = analyze_copy_score(text)
+            st.markdown("### Results")
+
+            col_a, col_b, col_c = st.columns(3)
+            with col_a:
+                st.metric("Overall Score", f"{analysis['total_score']} / 100")
+                st.metric("Length & Depth", f"{analysis['length_score']:.1f}")
+            with col_b:
+                st.metric("Emotional Triggers", f"{analysis['emotion_score']:.1f}")
+                st.metric("Structure (AIDA / PAS)", f"{analysis['structure_score']:.1f}")
+            with col_c:
+                st.metric("CTAs & Closers", f"{analysis['cta_score']:.1f}")
+                st.metric("Specificity & Proof", f"{analysis['specificity_score']:.1f}")
+
+            st.caption(
+                "Use this to spot obvious weak spots. For example, low emotional triggers or no clear CTA usually means low response."
+            )
+
+    else:
+        col1, col2 = st.columns(2)
+        with col1:
+            text_a = st.text_area(
+                "Variant A",
+                "",
+                height=240,
+                placeholder="Paste Variant A copy here...",
+            )
+        with col2:
+            text_b = st.text_area(
+                "Variant B",
+                "",
+                height=240,
+                placeholder="Paste Variant B copy here...",
+            )
+
+        if st.button("⚔️ Compare A vs B (Heuristic)"):
+            if not text_a.strip() or not text_b.strip():
+                st.error("Please paste copy for both Variant A and Variant B.")
+                return
+
+            analysis_a = analyze_copy_score(text_a)
+            analysis_b = analyze_copy_score(text_b)
+
+            st.markdown("### Variant Scores")
+
+            col_a, col_b = st.columns(2)
+            with col_a:
+                st.markdown("#### Variant A")
+                st.metric("Overall", f"{analysis_a['total_score']} / 100")
+                st.write(f"Length & Depth: {analysis_a['length_score']:.1f}")
+                st.write(f"Emotional Triggers: {analysis_a['emotion_score']:.1f}")
+                st.write(f"Structure: {analysis_a['structure_score']:.1f}")
+                st.write(f"CTAs: {analysis_a['cta_score']:.1f}")
+                st.write(f"Specificity: {analysis_a['specificity_score']:.1f}")
+
+            with col_b:
+                st.markdown("#### Variant B")
+                st.metric("Overall", f"{analysis_b['total_score']} / 100")
+                st.write(f"Length & Depth: {analysis_b['length_score']:.1f}")
+                st.write(f"Emotional Triggers: {analysis_b['emotion_score']:.1f}")
+                st.write(f"Structure: {analysis_b['structure_score']:.1f}")
+                st.write(f"CTAs: {analysis_b['cta_score']:.1f}")
+                st.write(f"Specificity: {analysis_b['specificity_score']:.1f}")
+
+            better = "A" if analysis_a["total_score"] > analysis_b["total_score"] else (
+                "B" if analysis_b["total_score"] > analysis_a["total_score"] else "Tie"
+            )
+
+            st.markdown("---")
+            if better == "Tie":
+                st.markdown("### 🏁 Verdict: **Tie** (on heuristic score)")
+            else:
+                st.markdown(f"### 🏁 Verdict: **Variant {better}** looks stronger on paper")
+
+            st.caption(
+                "Use this with the A/B Split Tester: this tab helps you pre-qualify ideas; "
+                "the Split Tester plus real clicks tells you who the real winner is."
+            )
+
+
 def page_settings_integrations():
     render_header()
     st.subheader("⚙️ Settings & Integrations")
@@ -1556,6 +1807,7 @@ def main():
                 "A/B Split Tester",
                 "Analytics",
                 "System Checklist",
+                "Copy Analyzer",
                 "Settings & Integrations",
             ],
         )
@@ -1578,6 +1830,8 @@ def main():
         page_analytics()
     elif page == "System Checklist":
         page_system_checklist()
+    elif page == "Copy Analyzer":
+        page_copy_analyzer()
     elif page == "Settings & Integrations":
         page_settings_integrations()
 
@@ -1596,3 +1850,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
