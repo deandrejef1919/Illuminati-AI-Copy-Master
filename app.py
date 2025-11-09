@@ -49,17 +49,25 @@ def page_dashboard():
 def page_manual_assets():
     st.header("📕 Illuminati AI Copy Master Manual & Assets")
     st.markdown("""
-    Click the button below to generate your **Illuminati AI Copy Master Manual** package,
-    including:
-    - Illustrated PDF manual  
-    - Matching high-res cover  
+    Generate your **Illuminati AI Copy Master Manual** package:
+
+    - Illustrated PDF manual (SOP + Master Appendix)  
+    - Matching high-res cover image  
     - Bundled ZIP package ready to download  
     """)
+
+    # Try to import the generator module here so we can see real errors
+    try:
+        from generate_illuminati_ai_package import main as generate_illuminati_package_main
+    except Exception as e:
+        st.error(f"Generator import failed: `{e}`")
+        st.stop()
 
     if st.button("🔺 Forge The Manual of Persuasion"):
         with st.spinner("Forging the manual, cover, and ZIP package..."):
             generate_illuminati_package_main()
         st.success("✅ The manual package has been forged successfully.")
+
         zip_path = "Illuminati_AI_Package.zip"
         if os.path.exists(zip_path):
             with open(zip_path, "rb") as f:
@@ -71,6 +79,7 @@ def page_manual_assets():
                 )
         else:
             st.error("Package ZIP not found. Please rerun the generator.")
+
 
 # --- Placeholder Pages ---
 def page_generate_copy():
