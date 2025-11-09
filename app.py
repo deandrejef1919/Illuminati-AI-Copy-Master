@@ -647,7 +647,7 @@ Body: ...
 
 # --- Manual & Assets Page ---
 def page_manual_assets():
-    st.header("📕 Illuminati AI Copy Master Manual & Assets")
+    st.header("🔺 Illuminati AI Copy Master Manual & Assets")
     st.markdown("""
 Generate your **Illuminati AI Copy Master Manual** package:
 
