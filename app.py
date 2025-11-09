@@ -162,30 +162,42 @@ def generate_rule_based_copy(
     headlines = []
 
     # 1. Benefit + without pain
-  headlines.append(
-    f"The {product_name} Shortcut That Quietly Turns Cold Traffic into Buyers"
-)
-
-first_audience_line = audience.splitlines()[0] if audience else "ambitious entrepreneurs"
-headlines.append(
-    f"New for {first_audience_line}: {product_name} That Finally Makes Your Traffic Pay"
-)
-
-headlines.append(
-    f"Use {product_name} to {base_benefit.lower()} in the Next 30 Days—Or Less"
-)
-
-if len(benefits_list) > 1:
-    second_benefit = benefits_list[1]
     headlines.append(
-        f"Turn {second_benefit.lower()} into your unfair advantage with {product_name}"
+        f"{base_benefit} — without the usual {'stress' if 'without' not in base_benefit.lower() else 'roadblocks'}"
     )
 
-# Bullet list
-bullets = "".join([f"- {b}\n" for b in benefits_list]) if benefits_list else "- Clear, measurable results\n"
+    # 2. How to + benefit
+    headlines.append(
+        f"How to {base_benefit.lower()} with {product_name} (Even If You Feel You’ve Tried Everything)"
+    )
 
+    # 3. Curiosity / shortcut
+    headlines.append(
+        f"The {product_name} Shortcut That Quietly Turns Cold Traffic into Buyers"
+    )
 
-    sales_copy = f\"\"\"[{master_style}-inspired angle – {style_flavor}]
+    # 4. Direct offer to audience
+    first_audience_line = audience.splitlines()[0] if audience else "ambitious entrepreneurs"
+    headlines.append(
+        f"New for {first_audience_line}: {product_name} That Finally Makes Your Traffic Pay"
+    )
+
+    # 5. Ultra-specific style
+    headlines.append(
+        f"Use {product_name} to {base_benefit.lower()} in the Next 30 Days—Or Less"
+    )
+
+    # 6. Optional extra hybrid
+    if len(benefits_list) > 1:
+        second_benefit = benefits_list[1]
+        headlines.append(
+            f"Turn {second_benefit.lower()} into your unfair advantage with {product_name}"
+        )
+
+    # Bullet list
+    bullets = "".join([f"- {b}\n" for b in benefits_list]) if benefits_list else "- Clear, measurable results\n"
+
+    sales_copy = f"""[{master_style}-inspired angle – {style_flavor}]
 
 ATTENTION
 
@@ -211,9 +223,10 @@ ACTION
 If you’re serious about {base_benefit.lower()} and ready to use copy that finally matches the value you deliver, this is your move:
 
 {cta.strip().rstrip('.')}.
-\"\"\"  # end f-string
+"""
 
     return headlines, sales_copy
+
 
 # --- Dashboard Page ---
 def page_dashboard():
