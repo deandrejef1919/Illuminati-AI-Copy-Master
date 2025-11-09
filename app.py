@@ -173,24 +173,25 @@ def generate_rule_based_copy(
 
     # 3. Curiosity / shortcut
     headlines.append(
-        f\"The {product_name} Shortcut That Quietly Turns Cold Traffic into Buyers\"
-    )
+       headlines.append(
+    f"The {product_name} Shortcut That Quietly Turns Cold Traffic into Buyers"
+)
 
-    # 4. Direct offer to audience
-    first_audience_line = audience.splitlines()[0] if audience else "ambitious entrepreneurs"
-    headlines.append(
-        f\"New for {first_audience_line}: {product_name} That Finally Makes Your Traffic Pay\"
-    )
+first_audience_line = audience.splitlines()[0] if audience else "ambitious entrepreneurs"
+headlines.append(
+    f"New for {first_audience_line}: {product_name} That Finally Makes Your Traffic Pay"
+)
 
-    # 5. Ultra-specific style
-    headlines.append(
-        f\"Use {product_name} to {base_benefit.lower()} in the Next 30 Days—Or Less\"
+headlines.append(
+    f"Use {product_name} to {base_benefit.lower()} in the Next 30 Days—Or Less"
+)
+
     )
 
     if len(benefits_list) > 1:
         second_benefit = benefits_list[1]
         headlines.append(
-            f\"Turn {second_benefit.lower()} into your unfair advantage with {product_name}\"
+            f"Turn {second_benefit.lower()} into your unfair advantage with {product_name}\"
         )
 
     # Bullet list
