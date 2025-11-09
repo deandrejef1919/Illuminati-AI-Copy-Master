@@ -699,18 +699,37 @@ Body: ...
 (Continue up to {num_ads})
 """.strip()
 
-        if engine_choice == "Gemini":
-        try:
-            ai_text = generate_with_gemini(prompt)
-            st.markdown("### 🤖 Gemini Classified Ads")
-            st.markdown(ai_text)
-            return
-        except Exception:
-            st.warning(
-                "Gemini is currently not available from this environment (model 404s). "
-                "Switch to Rule-based or OpenAI for classified ads."
-            )
-            return
+        # --- Gemini Engine ---
+if engine_choice == "Gemini":
+    try:
+        ai_text = generate_with_gemini(prompt)
+        st.markdown("### 🤖 Gemini Output")
+        st.markdown(ai_text)
+        return
+    except Exception:
+        # Gemini unavailable → fall back gracefully
+        st.warning(
+            "Gemini is currently not available from this environment (model 404s). "
+            "Using rule-based copy instead. You can switch to OpenAI in Settings for AI-generated copy."
+        )
+        headlines, sales_copy = generate_rule_based_copy(
+            product_name=product_name,
+            product_desc=product_desc,
+            audience=audience,
+            tone=tone,
+            benefits_list=benefits_list,
+            cta=cta,
+            awareness=awareness,
+            master_style=master_style,
+        )
+        st.markdown("### 📰 Headline Variations (Rule-based fallback)")
+        for i, h in enumerate(headlines, start=1):
+            st.write(f"{i}. {h}")
+        st.markdown("---")
+        st.markdown("### 📜 Sales Copy Draft (Rule-based fallback)")
+        st.code(sales_copy, language="markdown")
+        return
+
 
 
 
