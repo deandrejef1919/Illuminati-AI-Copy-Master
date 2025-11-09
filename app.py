@@ -849,4 +849,3 @@ elif page == "Traffic & Networks":
     page_traffic_networks()
 elif page == "Settings & Integrations":
     page_settings()
-
