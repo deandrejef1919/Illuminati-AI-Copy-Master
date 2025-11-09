@@ -106,25 +106,53 @@ def page_system_checklist():
 # --- Settings & Integrations Page (placeholder) ---
 def page_settings():
     st.header("⚙️ Settings & Integrations")
+
+    st.markdown("### AI Engine Mode")
+    engine_mode = st.radio(
+        "Choose your default generation engine:",
+        ["Rule-based", "OpenAI", "Gemini"],
+        index=["Rule-based", "OpenAI", "Gemini"].index(st.session_state["engine_mode"]),
+        help="Rule-based uses built-in templates with no tokens. OpenAI/Gemini use external APIs."
+    )
+
+    st.session_state["engine_mode"] = engine_mode
+
+    st.markdown("---")
+    st.markdown("### API Keys (Optional for this session)")
+
+    if engine_mode == "OpenAI":
+        openai_key = st.text_input(
+            "OpenAI API Key",
+            type="password",
+            value=st.session_state.get("openai_api_key", ""),
+            help="Used only in this session. For production, prefer Streamlit secrets."
+        )
+        st.session_state["openai_api_key"] = openai_key
+
+    elif engine_mode == "Gemini":
+        gemini_key = st.text_input(
+            "Gemini API Key",
+            type="password",
+            value=st.session_state.get("gemini_api_key", ""),
+            help="Used only in this session. For production, prefer Streamlit secrets."
+        )
+        st.session_state["gemini_api_key"] = gemini_key
+
+    else:
+        st.info("Rule-based mode is active. No external AI engine is required.")
+
+    st.markdown("---")
+    st.markdown("### Current Settings")
+
+    st.write(f"**Engine mode:** `{st.session_state['engine_mode']}`")
+
+    if st.session_state["engine_mode"] == "OpenAI":
+        st.write("**OpenAI key set:**", "✅ Yes" if st.session_state["openai_api_key"] else "❌ No")
+    elif st.session_state["engine_mode"] == "Gemini":
+        st.write("**Gemini key set:**", "✅ Yes" if st.session_state["gemini_api_key"] else "❌ No")
+
     st.markdown("""
-    This is a placeholder page for future settings, including:
-
-    - OpenAI / Gemini API configuration  
-    - Rule-based vs AI engine toggles  
-    - Affiliate & ESP integration options  
-
-    For now, no configuration is required. The app runs in minimal mode.
+    *Note:* Keys entered here are only kept in memory for this session.
+    For long-term, secure storage on Streamlit Cloud, use **Settings → Secrets** in the app dashboard.
     """)
-
-# --- Router ---
-if page == "Dashboard":
-    page_dashboard()
-elif page == "Generate Copy":
-    page_generate_copy()
-elif page == "Manual & Assets":
-    page_manual_assets()
-elif page == "System Checklist":
-    page_system_checklist()
-elif page == "Settings & Integrations":
-    page_settings()
 
