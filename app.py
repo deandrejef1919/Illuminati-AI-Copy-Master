@@ -5,7 +5,8 @@
 
 import streamlit as st
 import os
-from generate_illuminati_ai_package import main as generate_illuminati_package_main
+# NOTE: we will import the generator lazily inside the Manual & Assets page
+
 
 # --- Global UI Setup ---
 st.set_page_config(
