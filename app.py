@@ -460,13 +460,19 @@ SALES COPY:
         st.markdown(ai_text)
         return
 
-    # GEMINI ENGINE
+       # GEMINI ENGINE
     if engine_choice == "Gemini":
         try:
             ai_text = generate_with_gemini(prompt)
-        except Exception as e:
-            st.error(f"Gemini generation failed: {e}")
-            st.info("Falling back to rule-based copy.")
+            st.markdown("### 🤖 Gemini Output")
+            st.markdown(ai_text)
+            return
+        except Exception:
+            # Gemini is not reachable / models return 404 — use graceful fallback
+            st.warning(
+                "Gemini is currently not available from this environment (model 404s). "
+                "Using rule-based copy instead. You can switch to OpenAI in Settings for AI-generated copy."
+            )
             headlines, sales_copy = generate_rule_based_copy(
                 product_name=product_name,
                 product_desc=product_desc,
@@ -484,10 +490,6 @@ SALES COPY:
             st.markdown("### 📜 Sales Copy Draft (Rule-based fallback)")
             st.code(sales_copy, language="markdown")
             return
-
-        st.markdown("### 🤖 Gemini Output")
-        st.markdown(ai_text)
-        return
 
 
 # --- Classified Ad Writer Page ---
