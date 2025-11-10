@@ -70,94 +70,63 @@ body, .stApp {
 }
 
 /* Cards */
-.illuminati-card {
-    border-radius: 12px;
-    border: 1px solid rgba(245,215,110,0.35);
-    padding: 1rem 1.2rem;
-    margin-bottom: 0.75rem;
-    background: radial-gradient(circle at top, #111113 0%, #050506 55%, #000 100%);
-    box-shadow:
-        0 0 8px rgba(245,215,110,0.35),
-        0 0 16px rgba(155,17,30,0.35),
-        0 0 0 1px rgba(255,0,0,0.08);
-    animation: illuminati-pulse 6s ease-in-out infinite alternate;
-}
+/* === Illuminati Subtle Unified Glow === */
 
-
-.illuminati-accent { color:#f5d76e; font-weight:600; }
-
-/* War-room red class */
-.war-room-red { color:#ff2d2d; font-weight:800; text-shadow: 0 0 10px rgba(255,45,45,.6); }
-
-/* Buttons */
-div.stButton > button {
-    border-radius: 999px; border: 1px solid #f5d76e;
-    background: linear-gradient(135deg, #9b111e, #5c020b);
-    color:#fff; font-weight:600; box-shadow: 0 0 12px rgba(155,17,30,.7);
-}
-div.stButton > button:hover {
-    border-color:#fff; box-shadow: 0 0 18px rgba(245,215,110,.85);
-}
-
-/* Sidebar */
-section[data-testid="stSidebar"] {
-    background: radial-gradient(circle at top, #1b0a0f 0, #050506 55%, #000 100%);
-}
-section[data-testid="stSidebar"] * { color:#f5f5f5 !important; }
-
-/* Footer */
-.illuminati-footer {
-    text-align:center; font-size:.8rem; color:#aaa; margin-top:2.5rem; padding-top:.75rem;
-    border-top:1px solid rgba(245,215,110,.18); opacity:.9;
-}
-
-/* Login card */
-.login-card {
-    max-width: 480px; margin: 0 auto; padding: 1.2rem 1.4rem;
-    border:1px solid rgba(245,215,110,.2); border-radius:12px;
-    background: radial-gradient(circle at top, #111113 0, #050506 55%, #000 100%);
-    box-shadow: 0 0 22px rgba(245,215,110,.12);
-}
-.login-title { text-align:center; font-weight:700; color:#f5d76e; margin-bottom: .5rem; }
-/* Sidebar video glow */
-section[data-testid="stSidebar"] [data-testid="stVideo"] {
-    padding: 4px;
-    border-radius: 14px;
-    background: radial-gradient(circle at top, #1b0a0f 0, #050506 55%, #000 100%);
-    box-shadow:
-        0 0 10px rgba(245,215,110,0.5),
-        0 0 18px rgba(155,17,30,0.8);
-    border: 1px solid rgba(245,215,110,0.4);
-    margin-top: 0.5rem;
-}
-/* Sidebar Illuminati glowing pulse for video */
+/* Sidebar video */
 section[data-testid="stSidebar"] [data-testid="stVideo"] {
     padding: 5px;
     border-radius: 16px;
-    background: radial-gradient(circle at top, #1a0004 0%, #0a0000 55%, #000 100%);
-    border: 1px solid rgba(245,215,110,0.5);
+    background: radial-gradient(circle at top, #130000 0%, #090909 55%, #000 100%);
+    border: 1px solid rgba(245,215,110,0.3);
     box-shadow:
-        0 0 12px rgba(245,215,110,0.8),
-        0 0 20px rgba(155,17,30,0.7),
-        inset 0 0 10px rgba(245,215,110,0.4);
-    animation: pulse-glow 4s ease-in-out infinite alternate;
+        0 0 6px rgba(245,215,110,0.25),
+        0 0 10px rgba(155,17,30,0.25),
+        inset 0 0 5px rgba(245,215,110,0.15);
+    animation: illuminati-pulse 7s ease-in-out infinite alternate;
 }
 
-/* Pulse keyframes for Illuminati glow */
-@keyframes pulse-glow {
+/* Logo and title */
+.illuminati-header .illuminati-pyramid,
+.illuminati-header .illuminati-title {
+    animation: illuminati-pulse 7s ease-in-out infinite alternate;
+    color: #f7e58e;
+}
+
+/* Dashboard tiles */
+.illuminati-card {
+    border-radius: 12px;
+    border: 1px solid rgba(245,215,110,0.25);
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.75rem;
+    background: radial-gradient(circle at top, #101010 0%, #050506 55%, #000 100%);
+    box-shadow:
+        0 0 4px rgba(245,215,110,0.2),
+        0 0 8px rgba(155,17,30,0.2);
+    animation: illuminati-pulse 7s ease-in-out infinite alternate;
+}
+
+/* Shared keyframes (gentle glow) */
+@keyframes illuminati-pulse {
     0% {
         box-shadow:
-            0 0 10px rgba(245,215,110,0.4),
-            0 0 15px rgba(155,17,30,0.3),
-            inset 0 0 8px rgba(245,215,110,0.3);
+            0 0 5px rgba(245,215,110,0.2),
+            0 0 8px rgba(155,17,30,0.15),
+            inset 0 0 4px rgba(245,215,110,0.1);
+        text-shadow:
+            0 0 4px rgba(245,215,110,0.3),
+            0 0 8px rgba(155,17,30,0.2);
     }
     100% {
         box-shadow:
-            0 0 20px rgba(245,215,110,1),
-            0 0 30px rgba(155,17,30,1),
-            inset 0 0 12px rgba(245,215,110,0.8);
+            0 0 12px rgba(245,215,110,0.6),
+            0 0 18px rgba(155,17,30,0.5),
+            inset 0 0 6px rgba(245,215,110,0.3);
+        text-shadow:
+            0 0 10px rgba(245,215,110,0.7),
+            0 0 18px rgba(155,17,30,0.6);
     }
 }
+
 /* === Illuminati Glow Master Theme === */
 
 /* Sidebar video with pulsating glow */
