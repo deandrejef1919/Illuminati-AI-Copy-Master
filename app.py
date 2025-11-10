@@ -234,6 +234,68 @@ section[data-testid="stSidebar"] [data-testid="stVideo"] {
             0 0 24px rgba(155,17,30,0.8);
     }
 }
+/* === Illuminati Pulsing Glow (Logo + Sidebar Video in Sync) === */
+
+/* Sidebar video with pulsating glow */
+section[data-testid="stSidebar"] [data-testid="stVideo"] {
+    padding: 5px;
+    border-radius: 16px;
+    background: radial-gradient(circle at top, #1a0004 0%, #0a0000 55%, #000 100%);
+    border: 1px solid rgba(245,215,110,0.5);
+    box-shadow:
+        0 0 10px rgba(245,215,110,0.5),
+        0 0 18px rgba(155,17,30,0.5),
+        inset 0 0 6px rgba(245,215,110,0.3);
+    animation: illuminati-pulse 6s ease-in-out infinite alternate;
+}
+
+/* Pyramid + Title share same pulse */
+.illuminati-header .illuminati-pyramid,
+.illuminati-header .illuminati-title {
+    animation: illuminati-pulse 6s ease-in-out infinite alternate;
+}
+
+/* Pyramid base style */
+.illuminati-header .illuminati-pyramid {
+    font-size: 4rem;
+    color: #f5d76e;
+    text-shadow:
+        0 0 8px rgba(245,215,110,0.7),
+        0 0 18px rgba(155,17,30,0.6);
+}
+
+/* Title base style */
+.illuminati-header .illuminati-title {
+    font-size: 1.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #f5d76e;
+    text-shadow:
+        0 0 5px rgba(245,215,110,0.6),
+        0 0 10px rgba(155,17,30,0.5);
+}
+
+/* Shared pulse keyframes (logo + text + video in sync) */
+@keyframes illuminati-pulse {
+    0% {
+        box-shadow:
+            0 0 8px rgba(245,215,110,0.3),
+            0 0 14px rgba(155,17,30,0.25),
+            inset 0 0 4px rgba(245,215,110,0.2);
+        text-shadow:
+            0 0 6px rgba(245,215,110,0.5),
+            0 0 12px rgba(155,17,30,0.4);
+    }
+    100% {
+        box-shadow:
+            0 0 20px rgba(245,215,110,1),
+            0 0 32px rgba(155,17,30,0.9),
+            inset 0 0 10px rgba(245,215,110,0.8);
+        text-shadow:
+            0 0 16px rgba(245,215,110,1),
+            0 0 30px rgba(155,17,30,1);
+    }
+}
 </style>
 """
 st.markdown(APP_CSS, unsafe_allow_html=True)
