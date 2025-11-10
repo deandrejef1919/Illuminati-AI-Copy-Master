@@ -123,6 +123,34 @@ section[data-testid="stSidebar"] [data-testid="stVideo"] {
     border: 1px solid rgba(245,215,110,0.4);
     margin-top: 0.5rem;
 }
+/* Sidebar Illuminati glowing pulse for video */
+section[data-testid="stSidebar"] [data-testid="stVideo"] {
+    padding: 5px;
+    border-radius: 16px;
+    background: radial-gradient(circle at top, #1a0004 0%, #0a0000 55%, #000 100%);
+    border: 1px solid rgba(245,215,110,0.5);
+    box-shadow:
+        0 0 12px rgba(245,215,110,0.8),
+        0 0 20px rgba(155,17,30,0.7),
+        inset 0 0 10px rgba(245,215,110,0.4);
+    animation: pulse-glow 4s ease-in-out infinite alternate;
+}
+
+/* Pulse keyframes for Illuminati glow */
+@keyframes pulse-glow {
+    0% {
+        box-shadow:
+            0 0 10px rgba(245,215,110,0.4),
+            0 0 15px rgba(155,17,30,0.3),
+            inset 0 0 8px rgba(245,215,110,0.3);
+    }
+    100% {
+        box-shadow:
+            0 0 20px rgba(245,215,110,1),
+            0 0 30px rgba(155,17,30,1),
+            inset 0 0 12px rgba(245,215,110,0.8);
+    }
+}
 </style>
 """
 st.markdown(APP_CSS, unsafe_allow_html=True)
