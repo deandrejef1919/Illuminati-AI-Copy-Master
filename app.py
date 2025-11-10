@@ -71,11 +71,18 @@ body, .stApp {
 
 /* Cards */
 .illuminati-card {
-    border-radius: 12px; border:1px solid rgba(245,215,110,.18);
-    padding: 1rem 1.2rem; margin-bottom: .75rem;
-    background: radial-gradient(circle at top, #111113 0, #050506 55%, #000 100%);
-    box-shadow: 0 0 0 1px rgba(255,0,0,.05), 0 0 22px rgba(245,215,110,.12);
+    border-radius: 12px;
+    border: 1px solid rgba(245,215,110,0.35);
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.75rem;
+    background: radial-gradient(circle at top, #111113 0%, #050506 55%, #000 100%);
+    box-shadow:
+        0 0 8px rgba(245,215,110,0.35),
+        0 0 16px rgba(155,17,30,0.35),
+        0 0 0 1px rgba(255,0,0,0.08);
+    animation: illuminati-pulse 6s ease-in-out infinite alternate;
 }
+
 
 .illuminati-accent { color:#f5d76e; font-weight:600; }
 
