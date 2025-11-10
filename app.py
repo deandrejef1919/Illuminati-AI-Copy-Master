@@ -272,6 +272,15 @@ section[data-testid="stSidebar"] [data-testid="stVideo"] {
             0 0 30px rgba(155,17,30,1);
     }
 }
+/* === WAR ROOM Red Accent === */
+.illuminati-title span.war-room {
+    color: #e50914; /* deep illuminati red */
+    text-shadow:
+        0 0 6px rgba(229, 9, 20, 0.7),
+        0 0 14px rgba(229, 9, 20, 0.5),
+        0 0 22px rgba(229, 9, 20, 0.3);
+    font-weight: 700;
+}
 </style>
 """
 st.markdown(APP_CSS, unsafe_allow_html=True)
