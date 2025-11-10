@@ -1958,7 +1958,7 @@ def main():
         )
         st.markdown("---")
         st.markdown("##### 🎧 Mindset Fuel")
-        st.video("https://www.youtube.com/watch?v=IN2H8U9Zr3k")
+        st.video("https://master-mind-19.wistia.com/medias/setut7pc9k")
         st.caption("🎧 Earl Nightingale – \"The Strangest Secret\"")
         if st.button("🚪 Logout"):
             st.session_state["auth_ok"] = False
