@@ -3,6 +3,8 @@ import textwrap
 import re
 from typing import List, Tuple, Dict
 
+import streamlit.components.v1 as components  # not strictly needed, but safe if later used
+
 # Optional HTTP for Zapier test hook
 try:
     import requests  # type: ignore
@@ -51,28 +53,108 @@ body, .stApp {
 }
 .block-container { padding-top: 1.5rem; }
 
-/* Illuminati header */
-.illuminati-header { text-align:center; padding: 1rem 0 0.5rem 0; }
-.illuminati-title {
-    font-size: 2.1rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
-    color: #f5d76e;
-    text-shadow: 0 0 14px rgba(245,215,110,.95), 0 0 26px rgba(155,17,30,.80);
+/* Main header */
+.illuminati-header {
+    text-align:center;
+    padding: 1rem 0 0.5rem 0;
 }
-.illuminati-subtitle { font-size: .95rem; color:#f7f7f7; opacity:.85; }
 .illuminati-pyramid {
-    font-size: 2.5rem; margin-bottom: .25rem;
-    text-shadow: 0 0 14px rgba(245,215,110,.95), 0 0 26px rgba(155,17,30,.75);
+    font-size: 4rem;
+    color: #f5d76e;
+    text-shadow:
+        0 0 8px rgba(245,215,110,0.7),
+        0 0 18px rgba(155,17,30,0.6);
 }
-/* Sidebar brand */
+.illuminati-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #f5d76e;
+    text-shadow:
+        0 0 5px rgba(245,215,110,0.6),
+        0 0 10px rgba(155,17,30,0.5);
+}
+.illuminati-subtitle {
+    font-size: .95rem;
+    color:#f7f7f7;
+    opacity:.85;
+    margin-top: 0.25rem;
+}
+
+/* WAR ROOM red accents */
+.illuminati-title span.war-room {
+    color: #e50914;
+    text-shadow:
+        0 0 6px rgba(229, 9, 20, 0.7),
+        0 0 14px rgba(229, 9, 20, 0.5),
+        0 0 22px rgba(229, 9, 20, 0.3);
+    font-weight: 800;
+}
+.war-room-red {
+    color: #e50914;
+    font-weight: 800;
+    text-shadow:
+        0 0 6px rgba(229, 9, 20, 0.7),
+        0 0 14px rgba(229, 9, 20, 0.4);
+}
+
+/* Sidebar base */
+section[data-testid="stSidebar"] {
+    background: radial-gradient(circle at top, #1b0a0f 0, #050506 55%, #000 100%);
+}
+
+/* Sidebar "Illuminati AI" logo block – give depth/suspended look */
 .sidebar-logo {
-    text-align:center; font-size:1.1rem; font-weight:700; margin:.5rem 0 1.2rem 0; color:#f5d76e;
-    text-shadow: 0 0 12px rgba(245,215,110,.9), 0 0 24px rgba(155,17,30,.7);
+    text-align:center;
+    font-size:1.1rem;
+    font-weight:700;
+    margin:0.75rem 0 1.4rem 0;
+    color:#f5d76e;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.6rem 0.4rem;
+    border-radius: 14px;
+    background: radial-gradient(circle at 30% 0%, #2a0b12 0%, #050506 55%, #000 100%);
+    box-shadow:
+        0 0 10px rgba(245,215,110,0.25),
+        0 0 18px rgba(0,0,0,0.9),
+        inset 0 0 6px rgba(0,0,0,0.7);
+    border: 1px solid rgba(245,215,110,0.3);
+    transform: translateY(0px);
 }
 
 /* Cards */
-/* === Illuminati Subtle Unified Glow === */
+.illuminati-card {
+    border-radius: 12px;
+    border: 1px solid rgba(245,215,110,0.25);
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.75rem;
+    background: radial-gradient(circle at top, #101010 0%, #050506 55%, #000 100%);
+    box-shadow:
+        0 0 4px rgba(245,215,110,0.2),
+        0 0 8px rgba(155,17,30,0.2);
+    animation: illuminati-pulse 7s ease-in-out infinite alternate;
+}
 
-/* Sidebar video */
+.illuminati-accent { color:#f5d76e; font-weight:600; }
+
+/* Buttons – classic Illuminati red/gold pill style */
+div.stButton > button {
+    border-radius: 999px;
+    border: 1px solid #f5d76e;
+    background: linear-gradient(135deg, #9b111e, #5c020b);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 0 12px rgba(155,17,30,0.7);
+    padding: 0.4rem 1.1rem;
+}
+div.stButton > button:hover {
+    border-color: #ffffff;
+    box-shadow: 0 0 18px rgba(245,215,110,0.85);
+}
+
+/* Sidebar video, logo, and cards share subtle glow */
 section[data-testid="stSidebar"] [data-testid="stVideo"] {
     padding: 5px;
     border-radius: 16px;
@@ -85,24 +167,11 @@ section[data-testid="stSidebar"] [data-testid="stVideo"] {
     animation: illuminati-pulse 7s ease-in-out infinite alternate;
 }
 
-/* Logo and title */
+/* Logo and title share pulse */
 .illuminati-header .illuminati-pyramid,
 .illuminati-header .illuminati-title {
     animation: illuminati-pulse 7s ease-in-out infinite alternate;
     color: #f7e58e;
-}
-
-/* Dashboard tiles */
-.illuminati-card {
-    border-radius: 12px;
-    border: 1px solid rgba(245,215,110,0.25);
-    padding: 1rem 1.2rem;
-    margin-bottom: 0.75rem;
-    background: radial-gradient(circle at top, #101010 0%, #050506 55%, #000 100%);
-    box-shadow:
-        0 0 4px rgba(245,215,110,0.2),
-        0 0 8px rgba(155,17,30,0.2);
-    animation: illuminati-pulse 7s ease-in-out infinite alternate;
 }
 
 /* Shared keyframes (gentle glow) */
@@ -127,159 +196,24 @@ section[data-testid="stSidebar"] [data-testid="stVideo"] {
     }
 }
 
-/* === Illuminati Glow Master Theme === */
-
-/* Sidebar video with pulsating glow */
-section[data-testid="stSidebar"] [data-testid="stVideo"] {
-    padding: 5px;
-    border-radius: 16px;
-    background: radial-gradient(circle at top, #1a0004 0%, #0a0000 55%, #000 100%);
-    border: 1px solid rgba(245,215,110,0.5);
-    box-shadow:
-        0 0 12px rgba(245,215,110,0.8),
-        0 0 20px rgba(155,17,30,0.7),
-        inset 0 0 10px rgba(245,215,110,0.4);
-    animation: pulse-glow 5s ease-in-out infinite alternate;
+/* Login card */
+.login-card {
+    max-width: 480px; margin: 0 auto; padding: 1.2rem 1.4rem;
+    border:1px solid rgba(245,215,110,.2); border-radius:12px;
+    background: radial-gradient(circle at top, #111113 0, #050506 55%, #000 100%);
+    box-shadow: 0 0 22px rgba(245,215,110,.12);
 }
+.login-title { text-align:center; font-weight:700; color:#f5d76e; margin-bottom: .5rem; }
 
-/* Illuminati Pyramid Logo Pulsating Glow */
-.illuminati-header .illuminati-pyramid {
-    font-size: 4rem;
-    color: #f5d76e;
-    text-shadow:
-        0 0 10px rgba(245,215,110,0.8),
-        0 0 25px rgba(155,17,30,0.7),
-        0 0 45px rgba(245,215,110,0.9);
-    animation: pulse-glow-logo 5s ease-in-out infinite alternate;
-}
-
-/* Title glow to match pyramid */
-.illuminati-header .illuminati-title {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: 1.6rem;
-    color: #f5d76e;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    text-shadow:
-        0 0 6px rgba(245,215,110,0.8),
-        0 0 12px rgba(155,17,30,0.6);
-    animation: pulse-glow-text 6s ease-in-out infinite alternate;
-}
-
-/* Unified glowing pulse keyframes */
-@keyframes pulse-glow {
-    0% {
-        box-shadow:
-            0 0 10px rgba(245,215,110,0.4),
-            0 0 15px rgba(155,17,30,0.3),
-            inset 0 0 8px rgba(245,215,110,0.3);
-    }
-    100% {
-        box-shadow:
-            0 0 20px rgba(245,215,110,1),
-            0 0 30px rgba(155,17,30,1),
-            inset 0 0 12px rgba(245,215,110,0.8);
-    }
-}
-
-/* Pyramid glow animation */
-@keyframes pulse-glow-logo {
-    0% {
-        text-shadow:
-            0 0 8px rgba(245,215,110,0.6),
-            0 0 18px rgba(155,17,30,0.5);
-    }
-    100% {
-        text-shadow:
-            0 0 20px rgba(245,215,110,1),
-            0 0 40px rgba(155,17,30,1),
-            0 0 80px rgba(245,215,110,1);
-    }
-}
-
-/* Title text glow animation */
-@keyframes pulse-glow-text {
-    0% {
-        text-shadow:
-            0 0 6px rgba(245,215,110,0.4),
-            0 0 12px rgba(155,17,30,0.3);
-    }
-    100% {
-        text-shadow:
-            0 0 14px rgba(245,215,110,1),
-            0 0 24px rgba(155,17,30,0.8);
-    }
-}
-/* === Illuminati Pulsing Glow (Logo + Sidebar Video in Sync) === */
-
-/* Sidebar video with pulsating glow */
-section[data-testid="stSidebar"] [data-testid="stVideo"] {
-    padding: 5px;
-    border-radius: 16px;
-    background: radial-gradient(circle at top, #1a0004 0%, #0a0000 55%, #000 100%);
-    border: 1px solid rgba(245,215,110,0.5);
-    box-shadow:
-        0 0 10px rgba(245,215,110,0.5),
-        0 0 18px rgba(155,17,30,0.5),
-        inset 0 0 6px rgba(245,215,110,0.3);
-    animation: illuminati-pulse 6s ease-in-out infinite alternate;
-}
-
-/* Pyramid + Title share same pulse */
-.illuminati-header .illuminati-pyramid,
-.illuminati-header .illuminati-title {
-    animation: illuminati-pulse 6s ease-in-out infinite alternate;
-}
-
-/* Pyramid base style */
-.illuminati-header .illuminati-pyramid {
-    font-size: 4rem;
-    color: #f5d76e;
-    text-shadow:
-        0 0 8px rgba(245,215,110,0.7),
-        0 0 18px rgba(155,17,30,0.6);
-}
-
-/* Title base style */
-.illuminati-header .illuminati-title {
-    font-size: 1.6rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: #f5d76e;
-    text-shadow:
-        0 0 5px rgba(245,215,110,0.6),
-        0 0 10px rgba(155,17,30,0.5);
-}
-
-/* Shared pulse keyframes (logo + text + video in sync) */
-@keyframes illuminati-pulse {
-    0% {
-        box-shadow:
-            0 0 8px rgba(245,215,110,0.3),
-            0 0 14px rgba(155,17,30,0.25),
-            inset 0 0 4px rgba(245,215,110,0.2);
-        text-shadow:
-            0 0 6px rgba(245,215,110,0.5),
-            0 0 12px rgba(155,17,30,0.4);
-    }
-    100% {
-        box-shadow:
-            0 0 20px rgba(245,215,110,1),
-            0 0 32px rgba(155,17,30,0.9),
-            inset 0 0 10px rgba(245,215,110,0.8);
-        text-shadow:
-            0 0 16px rgba(245,215,110,1),
-            0 0 30px rgba(155,17,30,1);
-    }
-}
-/* === WAR ROOM Red Accent === */
-.illuminati-title span.war-room {
-    color: #e50914; /* deep illuminati red */
-    text-shadow:
-        0 0 6px rgba(229, 9, 20, 0.7),
-        0 0 14px rgba(229, 9, 20, 0.5),
-        0 0 22px rgba(229, 9, 20, 0.3);
-    font-weight: 700;
+/* Footer */
+.illuminati-footer {
+    text-align:center;
+    font-size:.8rem;
+    color:#aaa;
+    margin-top:2.5rem;
+    padding-top:.75rem;
+    border-top:1px solid rgba(245,215,110,.18);
+    opacity:.9;
 }
 </style>
 """
@@ -381,10 +315,25 @@ NICHE_DEFAULTS: Dict[str, Dict[str, List[str]]] = {
 def is_authenticated() -> bool:
     return bool(st.session_state.get("auth_ok", False))
 
+
 def require_secrets() -> Tuple[str, str]:
     user = st.secrets.get("ADMIN_USERNAME", "")
     pw = st.secrets.get("ADMIN_PASSWORD", "")
     return user, pw
+
+
+def render_footer():
+    st.markdown(
+        """
+        <div class="illuminati-footer">
+            © 2025 <strong>DeAndre Jefferson</strong><br/>
+            Strategic Copy, AI, and Influence Engineering.<br/>
+            Built with Python + Streamlit + OpenAI + Gemini + Claude (Anthropic).
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
 
 def login_page():
     # Header logo
@@ -393,9 +342,10 @@ def login_page():
         <div class="illuminati-header">
             <div class="illuminati-pyramid">🔺</div>
             <div class="illuminati-title">
-    ILLUMINATI AI COPY MASTER <span class="war-room">WAR ROOM</span>
-</div>
-
+                ILLUMINATI AI COPY MASTER <span class="war-room">WAR ROOM</span>
+            </div>
+            <div class="illuminati-subtitle">Admin Access Only</div>
+        </div>
         """,
         unsafe_allow_html=True,
     )
@@ -419,16 +369,7 @@ def login_page():
             st.error("Invalid credentials.")
     st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown(
-        """
-        <div class="illuminati-footer">
-            © 2025 <strong>DeAndre Jefferson</strong><br/>
-            Strategic Copy, AI, and Influence Engineering.<br/>
-            Built with Python + Streamlit + OpenAI + Gemini + Claude (Anthropic).
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    render_footer()
 
 
 # =========================
@@ -444,9 +385,10 @@ def normalize_audience(audience: str) -> str:
         return raw
     if " who " in low or " and " in low:
         return f"someone like {raw}"
-    if re.match(r"^\\d", raw):
+    if re.match(r"^\d", raw):
         return f"someone aged {raw}"
     return f"someone who is {raw}"
+
 
 def choose_niche_defaults(niche: str) -> Tuple[str, List[str]]:
     data = NICHE_DEFAULTS.get(niche)
@@ -456,6 +398,7 @@ def choose_niche_defaults(niche: str) -> Tuple[str, List[str]]:
             ["get results without overwhelm", "follow a simple plan", "feel confident doing it right"],
         )
     return data["audience"][0], data["benefits"]
+
 
 def send_zapier_webhook(url: str, payload: Dict) -> Tuple[bool, str]:
     if not url:
@@ -468,31 +411,46 @@ def send_zapier_webhook(url: str, payload: Dict) -> Tuple[bool, str]:
     except Exception as e:
         return False, f"Error sending webhook: {e}"
 
+
 EMOTIONAL_TRIGGERS = [
-    "secret","secrets","discover","finally","weird","shocking","hidden","proven","guaranteed","guarantee",
-    "instantly","suddenly","fear","greed","curiosity","strange","little-known","breakthrough","odd",
-    "easy","fast","quick","now","today","limited","scarcity","deadline","risk-free","no risk","exclusive",
+    "secret", "secrets", "discover", "finally", "weird", "shocking", "hidden", "proven",
+    "guaranteed", "guarantee", "instantly", "suddenly", "fear", "greed", "curiosity",
+    "strange", "little-known", "breakthrough", "odd", "easy", "fast", "quick", "now",
+    "today", "limited", "scarcity", "deadline", "risk-free", "no risk", "exclusive",
 ]
 CTA_PHRASES = [
-    "click here","tap here","join now","buy now","order now","get started","sign up","enroll now",
-    "start now","act now","claim your","grab your",
+    "click here", "tap here", "join now", "buy now", "order now", "get started",
+    "sign up", "enroll now", "start now", "act now", "claim your", "grab your",
 ]
 STRUCTURE_MARKERS = [
-    "attention","interest","desire","action","problem","agitate","solution","guarantee","testimonial",
-    "proof","bonus","faq",
+    "attention", "interest", "desire", "action",
+    "problem", "agitate", "solution",
+    "guarantee", "testimonial", "proof", "bonus", "faq",
 ]
+
 
 def analyze_copy_score(copy_text: str) -> Dict[str, float]:
     if not copy_text or not copy_text.strip():
-        return {k:0.0 for k in ["total_score","length_score","emotion_score","structure_score","cta_score","specificity_score"]}
+        return {
+            "total_score": 0.0,
+            "length_score": 0.0,
+            "emotion_score": 0.0,
+            "structure_score": 0.0,
+            "cta_score": 0.0,
+            "specificity_score": 0.0,
+        }
 
     text = copy_text.strip()
-    words = re.findall(r"\\w+", text)
+    words = re.findall(r"\w+", text)
     n_words = len(words)
 
-    if n_words < 80: length_score = 20.0
-    elif n_words < 200: length_score = 20 + (n_words - 80) / 120 * 40
-    elif n_words <= 1500: length_score = 60 + min((n_words - 200) / 1300 * 30, 30)
+    # Length score
+    if n_words < 80:
+        length_score = 20.0
+    elif n_words < 200:
+        length_score = 20 + (n_words - 80) / 120 * 40
+    elif n_words <= 1500:
+        length_score = 60 + min((n_words - 200) / 1300 * 30, 30)
     else:
         over = min((n_words - 1500) / 1500, 1.0)
         length_score = 90 - 30 * over
@@ -500,28 +458,38 @@ def analyze_copy_score(copy_text: str) -> Dict[str, float]:
     low = text.lower()
     emo_hits = sum(1 for t in EMOTIONAL_TRIGGERS if t in low)
     emo_score = min(emo_hits / 15.0, 1.0) * 100
+
     struct_hits = sum(1 for m in STRUCTURE_MARKERS if m in low)
     struct_score = min(struct_hits / 8.0, 1.0) * 100
+
     cta_hits = sum(1 for p in CTA_PHRASES if p in low)
-    if "http://" in low or "https://" in low: cta_hits += 1
+    if "http://" in low or "https://" in low:
+        cta_hits += 1
     cta_score = min(cta_hits / 4.0, 1.0) * 100
 
-    digits = len(re.findall(r"\\d", text))
-    percents = len(re.findall(r"\\d+%", text))
-    dollars = len(re.findall(r"\\$", text))
-    timeframes = len(re.findall(r"\\bday\\b|\\bdays\\b|\\bweek\\b|\\bweeks\\b|\\bmonth\\b|\\bmonths\\b", low))
+    digits = len(re.findall(r"\d", text))
+    percents = len(re.findall(r"\d+%", text))
+    dollars = len(re.findall(r"\$", text))
+    timeframes = len(re.findall(r"\bday\b|\bdays\b|\bweek\b|\bweeks\b|\bmonth\b|\bmonths\b", low))
     spec_raw = digits + percents + dollars + timeframes
     spec_score = min(spec_raw / 15.0, 1.0) * 100
 
-    total = length_score*0.20 + emo_score*0.25 + struct_score*0.20 + cta_score*0.15 + spec_score*0.20
+    total = (
+        length_score * 0.20
+        + emo_score * 0.25
+        + struct_score * 0.20
+        + cta_score * 0.15
+        + spec_score * 0.20
+    )
     total_score = max(1.0, min(100.0, total))
+
     return {
-        "total_score": round(total_score,1),
-        "length_score": round(length_score,1),
-        "emotion_score": round(emo_score,1),
-        "structure_score": round(struct_score,1),
-        "cta_score": round(cta_score,1),
-        "specificity_score": round(spec_score,1),
+        "total_score": round(total_score, 1),
+        "length_score": round(length_score, 1),
+        "emotion_score": round(emo_score, 1),
+        "structure_score": round(struct_score, 1),
+        "cta_score": round(cta_score, 1),
+        "specificity_score": round(spec_score, 1),
     }
 
 
@@ -549,6 +517,7 @@ def call_llm_openai(prompt: str, model: str = "gpt-4o-mini") -> Tuple[bool, str]
     except Exception as e:
         return False, f"OpenAI error: {e}"
 
+
 def call_llm_claude(prompt: str, model: str = "claude-3-5-sonnet-latest") -> Tuple[bool, str]:
     if anthropic is None:
         return False, "Anthropic SDK not installed."
@@ -564,9 +533,14 @@ def call_llm_claude(prompt: str, model: str = "claude-3-5-sonnet-latest") -> Tup
             system="You are a world-class direct-response copywriter who writes in master styles.",
             messages=[{"role": "user", "content": prompt}],
         )
-        return True, "".join([b.text for b in resp.content if hasattr(b, "text")])
+        text_parts = []
+        for block in resp.content:
+            if hasattr(block, "text"):
+                text_parts.append(block.text)
+        return True, "".join(text_parts)
     except Exception as e:
         return False, f"Claude error: {e}"
+
 
 def call_llm_groq(prompt: str, model: str = "llama-3.1-8b-instant") -> Tuple[bool, str]:
     if Groq is None:
@@ -587,6 +561,7 @@ def call_llm_groq(prompt: str, model: str = "llama-3.1-8b-instant") -> Tuple[boo
         return True, resp.choices[0].message.content.strip()
     except Exception as e:
         return False, f"Groq error: {e}"
+
 
 def call_llm_cohere(prompt: str, model: str = "command-r") -> Tuple[bool, str]:
     if cohere is None:
@@ -631,14 +606,17 @@ def generate_rule_based_copy(
     if "(" in raw_base and ")" in raw_base:
         before = raw_base.split("(", 1)[0].strip()
         inside = raw_base.split("(", 1)[1].split(")", 1)[0].strip()
-        if before: base_benefit_short = before
+        if before:
+            base_benefit_short = before
         base_benefit_detail = inside
 
     audience_short = normalize_audience(audience)
     style_flavor = MASTER_FLAVORS.get(master_style, "direct-response style tuned for conversions")
-    awareness_angle = AWARENESS_ANGLE.get(awareness, "meet them where they are and lead them step-by-step to a decision")
+    awareness_angle = AWARENESS_ANGLE.get(
+        awareness, "meet them where they are and lead them step-by-step to a decision"
+    )
     first_aud_line = audience.splitlines()[0].strip() if audience else "your market"
-    if re.match(r"^\\d", first_aud_line):
+    if re.match(r"^\d", first_aud_line):
         first_aud_line = f"people aged {first_aud_line}"
 
     headlines: List[str] = []
@@ -677,7 +655,7 @@ def generate_rule_based_copy(
         "Hybrid Mix": "Let’s mix hard-hitting direct response with what your market really cares about.",
     }.get(master_style, "Here’s the real story no one else is telling you.")
 
-    bullets = "\\n".join([f"- {b}" for b in benefits_list])
+    bullets = "\n".join([f"- {b}" for b in benefits_list])
     detail_sentence = f" In plain English: it {base_benefit_detail}." if base_benefit_detail else ""
 
     sales_copy = textwrap.dedent(
@@ -958,9 +936,11 @@ def generate_vsl_webinar_script(
         _, niche_b = choose_niche_defaults(niche)
         benefits_list = niche_b
     main_benefit = benefits_list[0]
-    extra_bullets = "\\n".join([f"- {b}" for b in benefits_list])
+    extra_bullets = "\n".join([f"- {b}" for b in benefits_list])
     style_flavor = MASTER_FLAVORS.get(master_style, "direct-response style tuned for conversions")
-    awareness_angle = AWARENESS_ANGLE.get(awareness, "meet them where they are and lead them step-by-step to a decision")
+    awareness_angle = AWARENESS_ANGLE.get(
+        awareness, "meet them where they are and lead them step-by-step to a decision"
+    )
 
     if master_style == "Gary Halbert":
         hook_line = "Let me start with a simple, slightly uncomfortable truth."
@@ -977,7 +957,7 @@ def generate_vsl_webinar_script(
     else:
         hook_line = "Let’s cut through the noise and talk about what actually matters."
 
-    secrets_block = "\\n".join([f"Secret #{i+1}: {b}" for i, b in enumerate(benefits_list[:3])])
+    secrets_block = "\n".join([f"Secret #{i+1}: {b}" for i, b in enumerate(benefits_list[:3])])
 
     if script_type == "VSL Script":
         script = textwrap.dedent(
@@ -1102,7 +1082,9 @@ def render_header():
         """
         <div class="illuminati-header">
             <div class="illuminati-pyramid">🔺</div>
-            <div class="illuminati-title">ILLUMINATI AI COPY MASTER</div>
+            <div class="illuminati-title">
+                ILLUMINATI AI COPY MASTER <span class="war-room">WAR ROOM</span>
+            </div>
             <div class="illuminati-subtitle">
                 Turn cold traffic into hot buyers with AI-copy inspired by Halbert, Ogilvy, Kennedy & the legends.
             </div>
@@ -1258,7 +1240,7 @@ def page_generate_copy():
         "Enhance with",
         ["OpenAI", "Claude (Anthropic)", "Groq (Llama)", "Cohere"],
         index=1,
-        help="Select a model provider to rewrite and strengthen your copy.",
+        help="Select a model provider to rewrite and strengthen your copy (requires API key in secrets).",
     )
 
     if st.button("✨ Enhance This Copy"):
@@ -1320,7 +1302,11 @@ def page_email_sequences():
         audience = st.text_area("Audience (copy from Generate Copy if you like)", "")
         benefits_text = st.text_area("Key Benefits (one per line)", "")
         master_style = st.selectbox("Master Style Influence", list(MASTER_FLAVORS.keys()), index=0)
-        awareness = st.selectbox("Audience Awareness Level", ["Unaware","Problem-aware","Solution-aware","Product-aware","Most-aware"], index=2)
+        awareness = st.selectbox(
+            "Audience Awareness Level",
+            ["Unaware", "Problem-aware", "Solution-aware", "Product-aware", "Most-aware"],
+            index=2,
+        )
         num_emails = st.slider("Number of emails", 3, 10, 5)
         submitted = st.form_submit_button("📨 Generate Email Sequence")
 
@@ -1332,7 +1318,9 @@ def page_email_sequences():
         return
 
     benefits_list = [ln.strip() for ln in benefits_text.splitlines() if ln.strip()]
-    seq = generate_email_sequence(product_name, product_desc, audience, benefits_list, master_style, awareness, num_emails)
+    seq = generate_email_sequence(
+        product_name, product_desc, audience, benefits_list, master_style, awareness, num_emails
+    )
     st.markdown("### ✉️ Generated Emails")
     for idx, email in enumerate(seq, start=1):
         with st.expander(f"Email {idx}: {email['subject']}"):
@@ -1359,7 +1347,11 @@ def page_vsl_webinar():
         product_desc = st.text_area("Product / Offer Description", "")
         audience = st.text_area("Target Audience", "")
         benefits_text = st.text_area("Core Benefits (one per line)", "")
-        awareness = st.selectbox("Audience Awareness Level", ["Unaware","Problem-aware","Solution-aware","Product-aware","Most-aware"], index=2)
+        awareness = st.selectbox(
+            "Audience Awareness Level",
+            ["Unaware", "Problem-aware", "Solution-aware", "Product-aware", "Most-aware"],
+            index=2,
+        )
         submitted = st.form_submit_button("🎬 Generate Script")
 
     if not submitted:
@@ -1370,7 +1362,9 @@ def page_vsl_webinar():
         return
 
     benefits_list = [ln.strip() for ln in benefits_text.splitlines() if ln.strip()]
-    script = generate_vsl_webinar_script(product_name, product_desc, audience, benefits_list, master_style, awareness, niche, script_type)
+    script = generate_vsl_webinar_script(
+        product_name, product_desc, audience, benefits_list, master_style, awareness, niche, script_type
+    )
     st.markdown("### 📜 Script Draft")
     st.text(script)
 
@@ -1419,7 +1413,11 @@ def page_manual_assets():
         product_name = st.text_input("Core Offer Name", "")
         niche = st.selectbox("Niche", list(NICHE_DEFAULTS.keys()), index=0)
     with col2:
-        lead_magnet_type = st.selectbox("Lead Magnet Type", ["Checklist","Cheat Sheet","Short PDF Guide (5–10 pages)","Email Mini-Course"], index=0)
+        lead_magnet_type = st.selectbox(
+            "Lead Magnet Type",
+            ["Checklist", "Cheat Sheet", "Short PDF Guide (5–10 pages)", "Email Mini-Course"],
+            index=0,
+        )
 
     if st.button("💡 Generate Lead Magnet Angle & Outline"):
         if not product_name:
@@ -1427,7 +1425,10 @@ def page_manual_assets():
         else:
             aud, benefits = choose_niche_defaults(niche)
             main_benefit = benefits[0] if benefits else "get better results faster"
-            title = f"{main_benefit.capitalize()} – Without The Usual Struggle: A {lead_magnet_type} For {aud.capitalize()}"
+            title = (
+                f"{main_benefit.capitalize()} – Without The Usual Struggle: "
+                f"A {lead_magnet_type} For {aud.capitalize()}"
+            )
             st.markdown("#### Suggested Lead Magnet Title")
             st.markdown(f"**{title}**")
             st.markdown("#### Suggested Outline")
@@ -1445,18 +1446,24 @@ def page_manual_assets():
 def page_traffic_networks():
     render_header()
     st.subheader("🚦 Traffic & Networks")
-    st.markdown("Links to affiliate networks, banner/solo ad platforms, and free classified sites (low/no special approval).")
+    st.markdown(
+        "Links to affiliate networks, banner/solo ad platforms, and free classified sites (low/no special approval)."
+    )
 
     st.markdown("### 💰 Affiliate Networks")
     affiliate_networks = [
-        {"name":"ClickBank","url":"https://accounts.clickbank.com/signup/","note":"Huge digital marketplace."},
-        {"name":"JVZoo","url":"https://www.jvzoo.com/register","note":"Digital products, IM, software."},
-        {"name":"WarriorPlus","url":"https://warriorplus.com/user/new","note":"IM and biz-op offers."},
-        {"name":"Digistore24","url":"https://www.digistore24.com/signup","note":"Global marketplace."},
-        {"name":"MaxBounty","url":"https://affiliates.maxbounty.com/register","note":"Top CPA network (application required)."},
-        {"name":"CJ","url":"https://signup.cj.com/member/signup/publisher/","note":"Big brand offers."},
-        {"name":"Impact","url":"https://impact.com/partners/affiliate-partners/","note":"Large platform with many brands."},
-        {"name":"PartnerStack","url":"https://dash.partnerstack.com/","note":"SaaS and software programs."},
+        {"name": "ClickBank", "url": "https://accounts.clickbank.com/signup/", "note": "Huge digital marketplace."},
+        {"name": "JVZoo", "url": "https://www.jvzoo.com/register", "note": "Digital products, IM, software."},
+        {"name": "WarriorPlus", "url": "https://warriorplus.com/user/new", "note": "IM and biz-op offers."},
+        {"name": "Digistore24", "url": "https://www.digistore24.com/signup", "note": "Global marketplace."},
+        {
+            "name": "MaxBounty",
+            "url": "https://affiliates.maxbounty.com/register",
+            "note": "Top CPA network (application required).",
+        },
+        {"name": "CJ", "url": "https://signup.cj.com/member/signup/publisher/", "note": "Big brand offers."},
+        {"name": "Impact", "url": "https://impact.com/partners/affiliate-partners/", "note": "Many major brands."},
+        {"name": "PartnerStack", "url": "https://dash.partnerstack.com/", "note": "SaaS and software programs."},
     ]
     for n in affiliate_networks:
         st.markdown(f"- [{n['name']}]({n['url']}) – {n['note']}")
@@ -1464,40 +1471,35 @@ def page_traffic_networks():
     st.markdown("---")
     st.markdown("### 📊 Banner & Solo Ad / Traffic Platforms")
     traffic_platforms = [
-        {"name":"Udimi (Solo Ads)","url":"https://udimi.com/signup","note":"Buy solo ads from list owners."},
-        {"name":"TrafficForMe","url":"https://www.trafficforme.net/","note":"Managed email traffic."},
-        {"name":"PropellerAds","url":"https://partners.propellerads.com/#/auth/signUp","note":"Push, pop, display formats."},
-        {"name":"Adsterra","url":"https://adsterra.com/","note":"Global ad network."},
-        {"name":"RichAds","url":"https://my.richads.com/signup","note":"Push, pops, direct clicks."},
-        {"name":"HilltopAds","url":"https://hilltopads.com/signup","note":"Display formats network."},
-        {"name":"7Search PPC","url":"https://www.7searchppc.com/","note":"Self-service PPC network."},
-        {"name":"20DollarBanners","url":"https://www.20dollarbanners.com/","note":"Affordable custom banner design."},
+        {"name": "Udimi (Solo Ads)", "url": "https://udimi.com/signup", "note": "Buy solo ads from list owners."},
+        {"name": "TrafficForMe", "url": "https://www.trafficforme.net/", "note": "Managed email traffic."},
+        {"name": "PropellerAds", "url": "https://partners.propellerads.com/#/auth/signUp", "note": "Push, pop, display."},
+        {"name": "Adsterra", "url": "https://adsterra.com/", "note": "Global ad network."},
+        {"name": "RichAds", "url": "https://my.richads.com/signup", "note": "Push, pops, and more."},
+        {"name": "HilltopAds", "url": "https://hilltopads.com/signup", "note": "Display formats network."},
+        {"name": "7Search PPC", "url": "https://www.7searchppc.com/", "note": "Self-service PPC network."},
+        {"name": "20DollarBanners", "url": "https://www.20dollarbanners.com/", "note": "Affordable custom banner design."},
     ]
     for p in traffic_platforms:
         st.markdown(f"- [{p['name']}]({p['url']}) – {p['note']}")
 
     st.markdown("---")
-    st.markdown("### 📦 Lead Magnet Hosting")
     st.markdown(
+        "### 📦 Lead Magnet Hosting\n"
         "- **MediaFire** – free file hosting for your PDFs: "
         "[Create free account](https://www.mediafire.com/upgrade/registration.php?pid=free)"
     )
 
 
 def page_classified_sites():
-    """
-    New tab: full high-traffic classified sites list, grouped like your document.
-    """
     render_header()
     st.subheader("📣 High-Traffic Classified Ad Sites")
 
     st.markdown(
-        "This tab maps out your **100+ free / high-traffic classified sites**, plus automation tools "
-        "and posting best practices, organized by section so you can build your **Medicinal Garden Kit** "
-        "and other offers into a serious distribution machine."
+        "This tab maps out your high-traffic classified sites, plus automation tools and posting best practices, "
+        "organized by section so you can turn offers into a serious distribution machine."
     )
 
-    # Top 20 Global
     with st.expander("📊 Top 20 Global High-Traffic Sites", expanded=True):
         st.markdown(
             """
@@ -1563,7 +1565,6 @@ def page_classified_sites():
             """
         )
 
-    # USA-focused
     with st.expander("🇺🇸 USA-Focused Classified Sites (21–40)"):
         st.markdown(
             """
@@ -1629,7 +1630,6 @@ def page_classified_sites():
             """
         )
 
-    # International
     with st.expander("🌍 International Classified Sites (41–55)"):
         st.markdown(
             """
@@ -1680,7 +1680,6 @@ def page_classified_sites():
             """
         )
 
-    # Business & Services
     with st.expander("💼 Business & Services Directories (56–70)"):
         st.markdown(
             """
@@ -1731,7 +1730,6 @@ def page_classified_sites():
             """
         )
 
-    # Specialty / Niche
     with st.expander("🎯 Specialty / Niche & Local (71–80)"):
         st.markdown(
             """
@@ -1767,7 +1765,6 @@ def page_classified_sites():
             """
         )
 
-    # Additional High-DA
     with st.expander("➕ Additional High-DA Sites (81–100)"):
         st.markdown(
             """
@@ -1833,7 +1830,6 @@ def page_classified_sites():
             """
         )
 
-    # Automation tools
     with st.expander("🤖 Automated Posting Tools & Software"):
         st.markdown(
             """
@@ -1863,39 +1859,19 @@ def page_classified_sites():
             """
         )
 
-    # Posting tips
     with st.expander("✅ Posting Tips for Best Results"):
         st.markdown(
             """
 1. **Post Consistently** – New ads every 2–3 days, renew expired ads.  
 2. **Use Multiple Sites** – Don’t rely on one; start with ⭐ sites first.  
-3. **Include Quality Images** – Clear, well-lit, relevant to your Medicinal Garden Kit offer.  
-4. **Write Compelling Titles** – Use benefit + keywords:  
-   - *“Medicinal Garden Kit – Grow Your Own Natural Remedies At Home”*  
-5. **Add Your Website URL** – Always include your landing page or funnel, ideally with UTM tracking.  
-6. **Track Performance** – UTM tags + your Analytics tab to see what sites actually bring leads/sales.  
+3. **Include Quality Images** – Clear, well-lit, relevant to your offer.  
+4. **Write Compelling Titles** – Use benefit + keywords.  
+5. **Add Your Website URL** – Always include your landing page or funnel with tracking.  
+6. **Track Performance** – UTM tags + Analytics tab.  
 7. **Follow Site Rules** – Avoid bans; read guidelines.  
-8. **Optimize for Local** – Use city/region + “natural health”, “herbal remedies”, etc.  
-9. **Test Ad Copy** – Use your Classified Ad Writer + A/B Split Tester to find winners.  
-10. **Respond Quickly** – Same day replies build trust and conversions.  
-            """
-        )
-
-    with st.expander("🎯 Top 10 Priority Sites for Medicinal Herbal Garden Kit", expanded=False):
-        st.markdown(
-            """
-Start with these 10 platforms before you expand to all 100+:
-
-1. **Craigslist** – Local & health-conscious shoppers.  
-2. **Facebook Marketplace** – Massive reach, easy discovery.  
-3. **OfferUp** – App-driven local buyers.  
-4. **Nextdoor** – Community trust + neighborhood context.  
-5. **Oodle** – General + health categories.  
-6. **VarageSale** – Community-based group selling.  
-7. **Gumtree** – UK/AU, perfect for international testing.  
-8. **OLX** – Huge global audience for scale.  
-9. **Locanto** – Easy posting, worldwide.  
-10. **ClassifiedAds.com** – Simple interface, solid traffic.  
+8. **Optimize for Local** – Use city/region + relevant keywords.  
+9. **Test Ad Copy** – Use Classified Ad Writer + A/B Split Tester.  
+10. **Respond Quickly** – Same-day replies boost conversions.  
             """
         )
 
@@ -1905,7 +1881,11 @@ def page_ab_split_tester():
     st.subheader("🧪 A/B Split Tester")
     st.markdown("Compare two variants with CTR, CVR, EPC, and ROI.")
 
-    test_type = st.selectbox("Test Type", ["Headline","Sales Page / VSL","Email Subject","Display Ad / Banner","Classified Ad","Other"], index=0)
+    test_type = st.selectbox(
+        "Test Type",
+        ["Headline", "Sales Page / VSL", "Email Subject", "Display Ad / Banner", "Classified Ad", "Other"],
+        index=0,
+    )
 
     with st.form("ab_test_form"):
         st.markdown("### Variant Details")
@@ -1931,11 +1911,11 @@ def page_ab_split_tester():
         return
 
     def calc(imp, clk, conv, rev):
-        ctr = (clk/imp*100) if imp>0 else 0.0
-        cvr = (conv/clk*100) if clk>0 else 0.0
-        cr  = (conv/imp*100) if imp>0 else 0.0
-        epc = (rev/clk) if clk>0 else 0.0
-        roi = ((rev-imp)/imp*100) if imp>0 and rev>0 else 0.0
+        ctr = (clk / imp * 100) if imp > 0 else 0.0
+        cvr = (conv / clk * 100) if clk > 0 else 0.0
+        cr = (conv / imp * 100) if imp > 0 else 0.0
+        epc = (rev / clk) if clk > 0 else 0.0
+        roi = ((rev - imp) / imp * 100) if imp > 0 and rev > 0 else 0.0
         return ctr, cvr, cr, epc, roi
 
     ctr_a, cvr_a, cr_a, epc_a, roi_a = calc(imp_a, clicks_a, conv_a, rev_a)
@@ -1944,10 +1924,14 @@ def page_ab_split_tester():
     col1, col2 = st.columns(2)
     with col1:
         st.markdown(f"#### {name_a}")
-        st.write(f"CTR: {ctr_a:.2f}% | Click→Conv: {cvr_a:.2f}% | Imp→Conv: {cr_a:.2f}% | EPC: ${epc_a:.2f} | ROI: {roi_a:.2f}%")
+        st.write(
+            f"CTR: {ctr_a:.2f}% | Click→Conv: {cvr_a:.2f}% | Imp→Conv: {cr_a:.2f}% | EPC: ${epc_a:.2f} | ROI: {roi_a:.2f}%"
+        )
     with col2:
         st.markdown(f"#### {name_b}")
-        st.write(f"CTR: {ctr_b:.2f}% | Click→Conv: {cvr_b:.2f}% | Imp→Conv: {cr_b:.2f}% | EPC: ${epc_b:.2f} | ROI: {roi_b:.2f}%")
+        st.write(
+            f"CTR: {ctr_b:.2f}% | Click→Conv: {cvr_b:.2f}% | Imp→Conv: {cr_b:.2f}% | EPC: ${epc_b:.2f} | ROI: {roi_b:.2f}%"
+        )
 
 
 def page_analytics():
@@ -1962,7 +1946,9 @@ def page_analytics():
         col1, col2, col3 = st.columns(3)
         with col1:
             campaign_name = st.text_input("Campaign Name", "Default Campaign")
-            channel = st.selectbox("Channel", ["Affiliate","Solo Ads","Banner / Display","Classifieds","Email","Other"], index=0)
+            channel = st.selectbox(
+                "Channel", ["Affiliate", "Solo Ads", "Banner / Display", "Classifieds", "Email", "Other"], index=0
+            )
         with col2:
             spend = st.number_input("Ad Spend / Cost ($)", min_value=0.0, step=1.0, value=0.0)
             clicks = st.number_input("Clicks", min_value=0, step=1, value=0)
@@ -1973,14 +1959,24 @@ def page_analytics():
         submitted = st.form_submit_button("➕ Add / Update Campaign Snapshot")
 
     if submitted:
-        cpc = (spend/clicks) if clicks>0 else 0.0
-        cpl = (spend/leads) if leads>0 else 0.0
-        cps = (spend/sales) if sales>0 else 0.0
-        epc = (revenue/clicks) if clicks>0 else 0.0
-        roi = ((revenue-spend)/spend*100) if spend>0 else 0.0
+        cpc = (spend / clicks) if clicks > 0 else 0.0
+        cpl = (spend / leads) if leads > 0 else 0.0
+        cps = (spend / sales) if sales > 0 else 0.0
+        epc = (revenue / clicks) if clicks > 0 else 0.0
+        roi = ((revenue - spend) / spend * 100) if spend > 0 else 0.0
         snap = {
-            "Campaign":campaign_name,"Channel":channel,"Spend":spend,"Clicks":clicks,"Leads":leads,"Sales":sales,
-            "Revenue":revenue,"CPC":round(cpc,4),"CPL":round(cpl,4),"CPS":round(cps,4),"EPC":round(epc,4),"ROI%":round(roi,2)
+            "Campaign": campaign_name,
+            "Channel": channel,
+            "Spend": spend,
+            "Clicks": clicks,
+            "Leads": leads,
+            "Sales": sales,
+            "Revenue": revenue,
+            "CPC": round(cpc, 4),
+            "CPL": round(cpl, 4),
+            "CPS": round(cps, 4),
+            "EPC": round(epc, 4),
+            "ROI%": round(roi, 2),
         }
         st.session_state["analytics_history"].append(snap)
         st.success("Snapshot added.")
@@ -2054,17 +2050,26 @@ def page_copy_analyzer():
             with col_a:
                 st.markdown("#### Variant A")
                 st.metric("Overall", f"{a['total_score']} / 100")
-                st.write(f"Len: {a['length_score']:.1f} | Emo: {a['emotion_score']:.1f} | Struct: {a['structure_score']:.1f} | CTA: {a['cta_score']:.1f} | Spec: {a['specificity_score']:.1f}")
+                st.write(
+                    f"Len: {a['length_score']:.1f} | Emo: {a['emotion_score']:.1f} | "
+                    f"Struct: {a['structure_score']:.1f} | CTA: {a['cta_score']:.1f} | Spec: {a['specificity_score']:.1f}"
+                )
             with col_b:
                 st.markdown("#### Variant B")
                 st.metric("Overall", f"{b['total_score']} / 100")
-                st.write(f"Len: {b['length_score']:.1f} | Emo: {b['emotion_score']:.1f} | Struct: {b['structure_score']:.1f} | CTA: {b['cta_score']:.1f} | Spec: {b['specificity_score']:.1f}")
+                st.write(
+                    f"Len: {b['length_score']:.1f} | Emo: {b['emotion_score']:.1f} | "
+                    f"Struct: {b['structure_score']:.1f} | CTA: {b['cta_score']:.1f} | Spec: {b['specificity_score']:.1f}"
+                )
 
 
 def page_settings_integrations():
     render_header()
     st.subheader("⚙️ Settings & Integrations")
-    st.markdown("This build supports rule-based generation plus optional AI enhancements via **OpenAI**, **Claude**, **Groq (Llama)**, and **Cohere**.")
+    st.markdown(
+        "This build supports rule-based generation plus optional AI enhancements via **OpenAI**, "
+        "**Claude**, **Groq (Llama)**, and **Cohere**."
+    )
     st.markdown("Add API keys in Streamlit secrets to enable each provider.")
 
     st.markdown("### 🤖 API Keys (add in Settings → Secrets)")
@@ -2079,12 +2084,15 @@ def page_settings_integrations():
     )
 
     st.markdown("### 🔗 Zapier Webhooks")
-    zap_url = st.text_input("Zapier Catch Hook URL", st.session_state.get("zapier_url",""))
+    zap_url = st.text_input("Zapier Catch Hook URL", st.session_state.get("zapier_url", ""))
     st.session_state["zapier_url"] = zap_url
-    test_payload = {"event":"test_ping","source":"Illuminati AI Copy Master"}
+    test_payload = {"event": "test_ping", "source": "Illuminati AI Copy Master"}
     if st.button("🚀 Send Test Webhook"):
         ok, msg = send_zapier_webhook(zap_url, test_payload)
-        st.success(msg) if ok else st.error(msg)
+        if ok:
+            st.success(msg)
+        else:
+            st.error(msg)
 
 
 # =========================
@@ -2098,10 +2106,8 @@ def main():
             st.markdown('<div class="sidebar-logo">🔺 Illuminati AI</div>', unsafe_allow_html=True)
             st.markdown("---")
             st.markdown("##### 🎧 Mindset Fuel")
-            # Reliable video playback: st.video with YouTube URL.
-            # If you get a Wistia share URL later, you can just replace this string.
-            st.video("https://www.youtube.com/watch?v=IN2H8U9Zr3k")
-            st.caption("🎧 Earl Nightingale – \"The Strangest Secret\"")
+            st.video("https://youtu.be/l1gXZu1i8TM?si=2D_D5KvB6t8fxxUj")
+            st.caption('🎧 Earl Nightingale – "The Strangest Secret"')
         login_page()
         return
 
@@ -2129,7 +2135,7 @@ def main():
         st.markdown("---")
         st.markdown("##### 🎧 Mindset Fuel")
         st.video("https://youtu.be/l1gXZu1i8TM?si=2D_D5KvB6t8fxxUj")
-        st.caption("🎧 Earl Nightingale – \"The Strangest Secret\"")
+        st.caption('🎧 Earl Nightingale – "The Strangest Secret"')
         if st.button("🚪 Logout"):
             st.session_state["auth_ok"] = False
             st.success("Logged out.")
@@ -2162,16 +2168,7 @@ def main():
     elif page == "Settings & Integrations":
         page_settings_integrations()
 
-    st.markdown(
-        """
-        <div class="illuminati-footer">
-            © 2025 <strong>DeAndre Jefferson</strong><br/>
-            Strategic Copy, AI, and Influence Engineering.<br/>
-            Built with Python + Streamlit + OpenAI + Gemini + Claude (Anthropic).
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    render_footer()
 
 
 if __name__ == "__main__":
