@@ -392,9 +392,10 @@ def login_page():
         """
         <div class="illuminati-header">
             <div class="illuminati-pyramid">🔺</div>
-            <div class="illuminati-title">ILLUMINATI AI COPY MASTER</div>
-            <div class="illuminati-subtitle">Admin Access Only</div>
-        </div>
+            <div class="illuminati-title">
+    ILLUMINATI AI COPY MASTER <span class="war-room">WAR ROOM</span>
+</div>
+
         """,
         unsafe_allow_html=True,
     )
