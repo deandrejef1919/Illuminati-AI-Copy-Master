@@ -1958,7 +1958,7 @@ def main():
         )
         st.markdown("---")
         st.markdown("##### 🎧 Mindset Fuel")
-        st.video("https://master-mind-19.wistia.com/medias/setut7pc9k")
+        st.video("<script src="https://fast.wistia.com/player.js" async></script><script src="https://fast.wistia.com/embed/setut7pc9k.js" async type="module"></script><style>wistia-player[media-id='setut7pc9k']:not(:defined) { background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/setut7pc9k/swatch'); display: block; filter: blur(5px); padding-top:56.25%; }</style> <wistia-player media-id="setut7pc9k" aspect="1.7777777777777777"></wistia-player>")
         st.caption("🎧 Earl Nightingale – \"The Strangest Secret\"")
         if st.button("🚪 Logout"):
             st.session_state["auth_ok"] = False
