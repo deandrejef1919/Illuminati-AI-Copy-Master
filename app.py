@@ -151,6 +151,89 @@ section[data-testid="stSidebar"] [data-testid="stVideo"] {
             inset 0 0 12px rgba(245,215,110,0.8);
     }
 }
+/* === Illuminati Glow Master Theme === */
+
+/* Sidebar video with pulsating glow */
+section[data-testid="stSidebar"] [data-testid="stVideo"] {
+    padding: 5px;
+    border-radius: 16px;
+    background: radial-gradient(circle at top, #1a0004 0%, #0a0000 55%, #000 100%);
+    border: 1px solid rgba(245,215,110,0.5);
+    box-shadow:
+        0 0 12px rgba(245,215,110,0.8),
+        0 0 20px rgba(155,17,30,0.7),
+        inset 0 0 10px rgba(245,215,110,0.4);
+    animation: pulse-glow 5s ease-in-out infinite alternate;
+}
+
+/* Illuminati Pyramid Logo Pulsating Glow */
+.illuminati-header .illuminati-pyramid {
+    font-size: 4rem;
+    color: #f5d76e;
+    text-shadow:
+        0 0 10px rgba(245,215,110,0.8),
+        0 0 25px rgba(155,17,30,0.7),
+        0 0 45px rgba(245,215,110,0.9);
+    animation: pulse-glow-logo 5s ease-in-out infinite alternate;
+}
+
+/* Title glow to match pyramid */
+.illuminati-header .illuminati-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1.6rem;
+    color: #f5d76e;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-shadow:
+        0 0 6px rgba(245,215,110,0.8),
+        0 0 12px rgba(155,17,30,0.6);
+    animation: pulse-glow-text 6s ease-in-out infinite alternate;
+}
+
+/* Unified glowing pulse keyframes */
+@keyframes pulse-glow {
+    0% {
+        box-shadow:
+            0 0 10px rgba(245,215,110,0.4),
+            0 0 15px rgba(155,17,30,0.3),
+            inset 0 0 8px rgba(245,215,110,0.3);
+    }
+    100% {
+        box-shadow:
+            0 0 20px rgba(245,215,110,1),
+            0 0 30px rgba(155,17,30,1),
+            inset 0 0 12px rgba(245,215,110,0.8);
+    }
+}
+
+/* Pyramid glow animation */
+@keyframes pulse-glow-logo {
+    0% {
+        text-shadow:
+            0 0 8px rgba(245,215,110,0.6),
+            0 0 18px rgba(155,17,30,0.5);
+    }
+    100% {
+        text-shadow:
+            0 0 20px rgba(245,215,110,1),
+            0 0 40px rgba(155,17,30,1),
+            0 0 80px rgba(245,215,110,1);
+    }
+}
+
+/* Title text glow animation */
+@keyframes pulse-glow-text {
+    0% {
+        text-shadow:
+            0 0 6px rgba(245,215,110,0.4),
+            0 0 12px rgba(155,17,30,0.3);
+    }
+    100% {
+        text-shadow:
+            0 0 14px rgba(245,215,110,1),
+            0 0 24px rgba(155,17,30,0.8);
+    }
+}
 </style>
 """
 st.markdown(APP_CSS, unsafe_allow_html=True)
