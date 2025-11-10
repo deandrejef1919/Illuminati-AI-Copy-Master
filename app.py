@@ -112,6 +112,17 @@ section[data-testid="stSidebar"] * { color:#f5f5f5 !important; }
     box-shadow: 0 0 22px rgba(245,215,110,.12);
 }
 .login-title { text-align:center; font-weight:700; color:#f5d76e; margin-bottom: .5rem; }
+/* Sidebar video glow */
+section[data-testid="stSidebar"] [data-testid="stVideo"] {
+    padding: 4px;
+    border-radius: 14px;
+    background: radial-gradient(circle at top, #1b0a0f 0, #050506 55%, #000 100%);
+    box-shadow:
+        0 0 10px rgba(245,215,110,0.5),
+        0 0 18px rgba(155,17,30,0.8);
+    border: 1px solid rgba(245,215,110,0.4);
+    margin-top: 0.5rem;
+}
 </style>
 """
 st.markdown(APP_CSS, unsafe_allow_html=True)
