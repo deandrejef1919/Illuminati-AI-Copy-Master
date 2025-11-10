@@ -98,20 +98,6 @@ section[data-testid="stSidebar"] {
 }
 section[data-testid="stSidebar"] * { color:#f5f5f5 !important; }
 
-/* Sidebar inspiration video */
-.inspire-video-container { text-align:center; margin-top: 12px; }
-.inspire-video-frame {
-    border: 2px solid #d4af37; border-radius:10px;
-    box-shadow: 0 0 8px rgba(212,175,55,.7), 0 0 16px rgba(155,17,30,.5);
-    animation: glowpulse 4s ease-in-out infinite alternate;
-}
-.inspire-caption { font-size:.7rem; color:#ccc; margin-top:8px; margin-bottom:10px; line-height:1.3; }
-
-@keyframes glowpulse {
-    from { box-shadow: 0 0 6px rgba(212,175,55,.4), 0 0 12px rgba(155,17,30,.25); }
-    to { box-shadow: 0 0 12px rgba(212,175,55,.9), 0 0 22px rgba(155,17,30,.7); }
-}
-
 /* Footer */
 .illuminati-footer {
     text-align:center; font-size:.8rem; color:#aaa; margin-top:2.5rem; padding-top:.75rem;
@@ -258,7 +244,7 @@ def login_page():
         elif username == admin_user and password == admin_pw:
             st.session_state["auth_ok"] = True
             st.success("Access granted. Loading your war room…")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Invalid credentials.")
     st.markdown("</div>", unsafe_allow_html=True)
@@ -441,7 +427,6 @@ def call_llm_cohere(prompt: str, model: str = "command-r") -> Tuple[bool, str]:
     try:
         client = cohere.Client(api_key)
         resp = client.chat(model=model, message=prompt, temperature=0.7)
-        # cohere returns text inside 'text' or 'response.text'
         text = getattr(resp, "text", None) or getattr(getattr(resp, "response", None), "text", "")
         return True, (text or "").strip()
     except Exception as e:
@@ -959,7 +944,7 @@ def render_header():
 
 
 # =========================
-# Pages (same as before, with a small tweak to "war room" color)
+# Pages
 # =========================
 
 def page_dashboard():
@@ -977,7 +962,6 @@ def page_dashboard():
             unsafe_allow_html=True,
         )
 
-        # "war room" colored red for just those words
         st.markdown(
             """
             <div class="illuminati-card">
@@ -1013,7 +997,7 @@ def page_dashboard():
                 <li>Pick your niche & master style (Halbert, Ogilvy, Kennedy, etc.).</li>
                 <li>Generate headlines + sales copy.</li>
                 <li>Turn that into an email sequence, VSL script, and classifieds.</li>
-                <li>Use <strong>Traffic & Networks</strong> for offers and clicks.</li>
+                <li>Use <strong>Traffic & Networks</strong> + <strong>Classified Sites</strong> for offers and clicks.</li>
                 <li>Use <strong>A/B Split Tester</strong> & <strong>Analytics</strong> to judge what wins.</li>
             </ol>
             </div>
@@ -1021,12 +1005,6 @@ def page_dashboard():
             unsafe_allow_html=True,
         )
 
-# (All the other pages from your previous working build remain unchanged)
-# Due to length, we include the key ones you’re actively using: Generate Copy, Email Sequences,
-# VSL & Webinar Scripts, Classified Ad Writer, Manual & Lead Magnet, Traffic & Networks,
-# A/B Split Tester, Analytics, System Checklist, Copy Analyzer, Settings & Integrations.
-
-# ---- COPY OF PREVIOUS PAGES (unchanged content) ----
 
 def page_generate_copy():
     render_header()
@@ -1160,6 +1138,7 @@ the niche {niche}, and the awareness level {awareness}. Do NOT include the brief
         else:
             st.error(result or "Enhancement failed.")
 
+
 def page_email_sequences():
     render_header()
     st.subheader("📧 Email Sequences")
@@ -1189,6 +1168,7 @@ def page_email_sequences():
         with st.expander(f"Email {idx}: {email['subject']}"):
             st.markdown(f"**Subject:** {email['subject']}")
             st.text(email["body"])
+
 
 def page_vsl_webinar():
     render_header()
@@ -1224,6 +1204,7 @@ def page_vsl_webinar():
     st.markdown("### 📜 Script Draft")
     st.text(script)
 
+
 def page_classified_writer():
     render_header()
     st.subheader("📢 Classified Ad Writer")
@@ -1255,6 +1236,7 @@ def page_classified_writer():
     for i, ad in enumerate(ads, start=1):
         with st.expander(f"Classified Ad {i}"):
             st.text(ad)
+
 
 def page_manual_assets():
     render_header()
@@ -1288,6 +1270,7 @@ def page_manual_assets():
             ]
             for i, item in enumerate(outline, start=1):
                 st.write(f"{i}. {item}")
+
 
 def page_traffic_networks():
     render_header()
@@ -1324,26 +1307,428 @@ def page_traffic_networks():
         st.markdown(f"- [{p['name']}]({p['url']}) – {p['note']}")
 
     st.markdown("---")
-    st.markdown("### 📣 Free Classified Ad Sites")
-    classified_sites = [
-        {"name":"Craigslist","url":"https://www.craigslist.org/","note":"Massive local classifieds."},
-        {"name":"ClassifiedAds.com","url":"https://www.classifiedads.com/","note":"Free general classifieds."},
-        {"name":"Oodle","url":"https://www.oodle.com/","note":"Aggregated local ads."},
-        {"name":"Geebo","url":"https://geebo.com/","note":"Jobs/housing/general."},
-        {"name":"Locanto","url":"https://www.locanto.com/","note":"Free classifieds in many countries."},
-        {"name":"Gumtree","url":"https://my.gumtree.com/create-account","note":"UK and other markets."},
-        {"name":"Kijiji (Canada)","url":"https://www.kijiji.ca/","note":"Canadian classifieds."},
-        {"name":"Facebook Marketplace","url":"https://www.facebook.com/marketplace/","note":"Huge local reach."},
-    ]
-    for s in classified_sites:
-        st.markdown(f"- [{s['name']}]({s['url']}) – {s['note']}")
-
-    st.markdown("---")
     st.markdown("### 📦 Lead Magnet Hosting")
     st.markdown(
         "- **MediaFire** – free file hosting for your PDFs: "
         "[Create free account](https://www.mediafire.com/upgrade/registration.php?pid=free)"
     )
+
+
+def page_classified_sites():
+    """
+    New tab: full high-traffic classified sites list, grouped like your document.
+    """
+    render_header()
+    st.subheader("📣 High-Traffic Classified Ad Sites")
+
+    st.markdown(
+        "This tab maps out your **100+ free / high-traffic classified sites**, plus automation tools "
+        "and posting best practices, organized by section so you can build your **Medicinal Garden Kit** "
+        "and other offers into a serious distribution machine."
+    )
+
+    # Top 20 Global
+    with st.expander("📊 Top 20 Global High-Traffic Sites", expanded=True):
+        st.markdown(
+            """
+1. ⭐ **Craigslist** – GENERAL, HEALTH, LOCAL – ~157M visits  
+   👉 <https://www.craigslist.org>  
+
+2. ⭐ **Facebook Marketplace** – GENERAL, HEALTH, LOCAL – ~1.2B users  
+   👉 <https://www.facebook.com/marketplace>  
+
+3. **eBay Classifieds** – GENERAL – 50M+ visits  
+   👉 <https://www.ebay.com/classifieds>  
+
+4. ⭐ **Oodle** – GENERAL, HEALTH – 15M+ visits  
+   👉 <https://www.oodle.com>  
+
+5. **Gumtree (UK/AU)** – GENERAL – 30M+ visits  
+   👉 <https://www.gumtree.com>  
+
+6. **Locanto** – GENERAL – 8M+ visits  
+   👉 <https://www.locanto.com>  
+
+7. **Geebo** – GENERAL – 2M+ visits  
+   👉 <https://www.geebo.com>  
+
+8. **ClassifiedAds** – GENERAL – 5M+ visits  
+   👉 <https://www.classifiedads.com>  
+
+9. **Hoobly** – GENERAL – 3M+ visits  
+   👉 <https://www.hoobly.com>  
+
+10. **PennySaverUSA** – GENERAL – 4M+ visits  
+    👉 <https://www.pennysaverusa.com>  
+
+11. **Advertise Era** – GENERAL – 1M+ visits  
+    👉 <https://www.advertiseera.com>  
+
+12. **WallClassifieds** – GENERAL – 800K+ visits  
+    👉 <https://www.wallclassifieds.com>  
+
+13. **AdPost** – GENERAL – 2M+ visits  
+    👉 <https://www.adpost.com>  
+
+14. **DomesticSale** – GENERAL – 1.5M+ visits  
+    👉 <https://www.domesticsale.com>  
+
+15. **Recycler** – GENERAL – 3M+ visits  
+    👉 <https://www.recycler.com>  
+
+16. **Bedpage** – GENERAL – 10M+ visits  
+    👉 <https://www.bedpage.com>  
+
+17. **ClassifiedsFactor** – GENERAL – 500K+ visits  
+    👉 <https://www.classifiedsfactor.com>  
+
+18. **USNetAds** – GENERAL – 1M+ visits  
+    👉 <https://www.usnetads.com>  
+
+19. **Yakaz** – GENERAL – 2M+ visits  
+    👉 <https://www.yakaz.com>  
+
+20. **eBizMBA** – SERVICES – 500K+ visits  
+    👉 <https://www.ebizmba.com>  
+            """
+        )
+
+    # USA-focused
+    with st.expander("🇺🇸 USA-Focused Classified Sites (21–40)"):
+        st.markdown(
+            """
+21. ⭐ **OfferUp** – GENERAL, HEALTH, LOCAL – 20M+ visits  
+    👉 <https://offerup.com>  
+
+22. **5Miles** – GENERAL, LOCAL – 5M+ visits  
+    👉 <https://www.5miles.com>  
+
+23. ⭐ **VarageSale** – GENERAL, HEALTH, LOCAL – 3M+ visits  
+    👉 <https://www.varagesale.com>  
+
+24. **Trovit** – GENERAL – 15M+ visits  
+    👉 <https://www.trovit.com>  
+
+25. **Vast** – GENERAL – 2M+ visits  
+    👉 <https://www.vast.com>  
+
+26. **AdLandPro** – SERVICES – 800K+ visits  
+    👉 <https://www.adlandpro.com>  
+
+27. **USFreeAds** – GENERAL – 1.5M+ visits  
+    👉 <https://www.usfreeads.com>  
+
+28. **AmericanListed** – GENERAL – 2M+ visits  
+    👉 <https://www.americanlisted.com>  
+
+29. **FreeAdsTime** – GENERAL – 600K+ visits  
+    👉 <https://www.freeadstime.org>  
+
+30. **Classi4U** – GENERAL – 400K+ visits  
+    👉 <https://www.classi4u.com>  
+
+31. **Adoos** – GENERAL – 1M+ visits  
+    👉 <https://www.adoos.com>  
+
+32. **Click.in** – GENERAL – 5M+ visits  
+    👉 <https://www.click.in>  
+
+33. **BuySellCommunity** – GENERAL – 300K+ visits  
+    👉 <https://www.buysellcommunity.com>  
+
+34. **iNetGiant** – GENERAL – 800K+ visits  
+    👉 <https://www.inetgiant.com>  
+
+35. **SaleSpider** – SERVICES – 500K+ visits  
+    👉 <https://www.salespider.com>  
+
+36. **Kugli** – GENERAL – 600K+ visits  
+    👉 <https://www.kugli.com>  
+
+37. **BackPageAd** – GENERAL – 2M+ visits  
+    👉 <https://www.backpagead.com>  
+
+38. **ClassifiedSubmissions** – GENERAL – 400K+ visits  
+    👉 <https://www.classifiedsubmissions.com>  
+
+39. **AdsGlobe** – GENERAL – 500K+ visits  
+    👉 <https://www.adsglobe.com>  
+
+40. **FreeClassifiedsSite** – GENERAL – 300K+ visits  
+    👉 <https://www.freeclassifiedssite.com>  
+            """
+        )
+
+    # International
+    with st.expander("🌍 International Classified Sites (41–55)"):
+        st.markdown(
+            """
+41. **OLX (Global)** – GENERAL – 300M+ visits  
+    👉 <https://www.olx.com>  
+
+42. **Quikr (India)** – GENERAL – 30M+ visits  
+    👉 <https://www.quikr.com>  
+
+43. **Vivastreet** – GENERAL – 25M+ visits  
+    👉 <https://www.vivastreet.com>  
+
+44. **Expatriates** – GENERAL – 2M+ visits  
+    👉 <https://www.expatriates.com>  
+
+45. **AddonFace** – GENERAL – 500K+ visits  
+    👉 <https://www.addonface.com>  
+
+46. **Cifiyah** – GENERAL – 400K+ visits  
+    👉 <https://www.cifiyah.com>  
+
+47. **Kijiji (Canada)** – GENERAL – 20M+ visits  
+    👉 <https://www.kijiji.ca>  
+
+48. **FreeAdsUK** – GENERAL – 1M+ visits  
+    👉 <https://www.freeadsuk.co.uk>  
+
+49. **Friday-Ad (UK)** – GENERAL – 2M+ visits  
+    👉 <https://www.friday-ad.co.uk>  
+
+50. **AdTrader (UK)** – GENERAL – 1.5M+ visits  
+    👉 <https://www.adtrader.co.uk>  
+
+51. **FreeAds (UK)** – GENERAL – 3M+ visits  
+    👉 <https://www.freeads.co.uk>  
+
+52. **PostAdverts (UK)** – GENERAL – 800K+ visits  
+    👉 <https://www.postadverts.com>  
+
+53. **Gumtree Australia** – GENERAL – 15M+ visits  
+    👉 <https://www.gumtree.com.au>  
+
+54. **TradeMe (New Zealand)** – GENERAL – 5M+ visits  
+    👉 <https://www.trademe.co.nz>  
+
+55. **DealMarkaz (Pakistan)** – GENERAL – 1M+ visits  
+    👉 <https://www.dealmarkaz.pk>  
+            """
+        )
+
+    # Business & Services
+    with st.expander("💼 Business & Services Directories (56–70)"):
+        st.markdown(
+            """
+56. **Sulekha** – SERVICES – 5M+ visits  
+    👉 <https://www.sulekha.com>  
+
+57. **Thumbtack** – SERVICES – 30M+ visits  
+    👉 <https://www.thumbtack.com>  
+
+58. **Angie's List** – SERVICES – 10M+ visits  
+    👉 <https://www.angieslist.com>  
+
+59. **Bark** – SERVICES – 8M+ visits  
+    👉 <https://www.bark.com>  
+
+60. **HomeAdvisor** – SERVICES – 25M+ visits  
+    👉 <https://www.homeadvisor.com>  
+
+61. **Porch** – SERVICES – 5M+ visits  
+    👉 <https://www.porch.com>  
+
+62. **Houzz** – SERVICES – 40M+ visits  
+    👉 <https://www.houzz.com>  
+
+63. **ServiceMagic** – SERVICES – 3M+ visits  
+    👉 <https://www.servicemagic.com>  
+
+64. **Guru** – SERVICES – 2M+ visits  
+    👉 <https://www.guru.com>  
+
+65. **Freelancer** – SERVICES – 50M+ visits  
+    👉 <https://www.freelancer.com>  
+
+66. **Upwork** – SERVICES – 70M+ visits  
+    👉 <https://www.upwork.com>  
+
+67. **Fiverr** – SERVICES – 80M+ visits  
+    👉 <https://www.fiverr.com>  
+
+68. **PeoplePerHour** – SERVICES – 3M+ visits  
+    👉 <https://www.peopleperhour.com>  
+
+69. **TaskRabbit** – SERVICES – 5M+ visits  
+    👉 <https://www.taskrabbit.com>  
+
+70. **Zaarly** – SERVICES – 500K+ visits  
+    👉 <https://www.zaarly.com>  
+            """
+        )
+
+    # Specialty / Niche
+    with st.expander("🎯 Specialty / Niche & Local (71–80)"):
+        st.markdown(
+            """
+71. ⭐ **Nextdoor** – LOCAL, HEALTH – 37M+ visits  
+    👉 <https://www.nextdoor.com>  
+
+72. **Bookoo** – LOCAL – 2M+ visits  
+    👉 <https://www.bookoo.com>  
+
+73. **GarageSaleHunter** – LOCAL – 500K+ visits  
+    👉 <https://www.garagesalehunter.com>  
+
+74. **YardSaleSearch** – LOCAL – 800K+ visits  
+    👉 <https://www.yardsalesearch.com>  
+
+75. **PetClassifieds** – GENERAL – 300K+ visits  
+    👉 <https://www.petclassifieds.us>  
+
+76. **PuppyFind** – GENERAL – 2M+ visits  
+    👉 <https://www.puppyfind.com>  
+
+77. **ApartmentGuide** – SERVICES – 10M+ visits  
+    👉 <https://www.apartmentguide.com>  
+
+78. **Zillow** – SERVICES – 200M+ visits  
+    👉 <https://www.zillow.com>  
+
+79. **Trulia** – SERVICES – 30M+ visits  
+    👉 <https://www.trulia.com>  
+
+80. **Realtor.com** – SERVICES – 100M+ visits  
+    👉 <https://www.realtor.com>  
+            """
+        )
+
+    # Additional High-DA
+    with st.expander("➕ Additional High-DA Sites (81–100)"):
+        st.markdown(
+            """
+81. **ClickIndia** – GENERAL – 5M+ visits  
+    👉 <https://www.clickindia.com>  
+
+82. **IndiaList** – GENERAL – 2M+ visits  
+    👉 <https://www.indialist.com>  
+
+83. **Khojle** – GENERAL – 1M+ visits  
+    👉 <https://www.khojle.in>  
+
+84. **PostJobFree** – SERVICES – 1.5M+ visits  
+    👉 <https://www.postjobfree.com>  
+
+85. **H1Ad** – GENERAL – 300K+ visits  
+    👉 <https://www.h1ad.com>  
+
+86. **GiganticList** – GENERAL – 600K+ visits  
+    👉 <https://www.giganticlist.com>  
+
+87. **Claz.org** – GENERAL – 400K+ visits  
+    👉 <https://www.claz.org>  
+
+88. **SaudiAds** – GENERAL – 800K+ visits  
+    👉 <https://www.saudiads.com>  
+
+89. **TuffClassified** – GENERAL – 500K+ visits  
+    👉 <https://www.tuffclassified.com>  
+
+90. **Classifieds24x7** – GENERAL – 300K+ visits  
+    👉 <https://www.classifieds24x7.com>  
+
+91. **MyFavoriteClassifieds** – GENERAL – 200K+ visits  
+    👉 <https://www.myfavoriteclassifieds.com>  
+
+92. **MaxBizPages** – SERVICES – 400K+ visits  
+    👉 <https://www.maxbizpages.com>  
+
+93. **AskAds** – GENERAL – 300K+ visits  
+    👉 <https://www.askads.com>  
+
+94. **WebClassifieds** – GENERAL – 250K+ visits  
+    👉 <https://www.webclassifieds.us>  
+
+95. **FreeAdsList** – GENERAL – 350K+ visits  
+    👉 <https://www.freeadslist.com>  
+
+96. **AdSitePro** – GENERAL – 200K+ visits  
+    👉 <https://www.adsitepro.com>  
+
+97. **ClickBazaar** – GENERAL – 500K+ visits  
+    👉 <https://www.clickbazaar.com>  
+
+98. **GlobalFreeClassifiedAds** – GENERAL – 300K+ visits  
+    👉 <https://www.globalfreeclassifiedads.com>  
+
+99. **TopClassifieds** – GENERAL – 250K+ visits  
+    👉 <https://www.topclassifieds.com>  
+
+100. **ClassifiedAdsUSA** – GENERAL – 400K+ visits  
+     👉 <https://www.classifiedadsusa.com>  
+            """
+        )
+
+    # Automation tools
+    with st.expander("🤖 Automated Posting Tools & Software"):
+        st.markdown(
+            """
+- **ClassifiedSubmissions.com** – Web-based posting to 100+ sites, scheduling  
+  👉 <https://www.classifiedsubmissions.com>  
+
+- **PostLister** – Desktop software, bulk posting, templates  
+
+- **Claz Automated Poster** – Free basic posting, paid bulk options  
+  👉 <https://www.claz.org>  
+
+- **Classified Ad Posting Software (various)** – Multi-site posting, image mgmt  
+
+- **Craigslist Auto Poster** – Use carefully (Craigslist is strict)  
+
+- **IFTTT** – Automation platform, can connect social to some sites  
+  👉 <https://ifttt.com>  
+
+- **Zapier** – Automation platform for workflows  
+  👉 <https://zapier.com>  
+
+- **Buffer** – Schedules social posts; useful for Marketplace-style traffic  
+  👉 <https://buffer.com>  
+
+- **Hootsuite** – Multi-platform scheduling  
+  👉 <https://hootsuite.com>  
+            """
+        )
+
+    # Posting tips
+    with st.expander("✅ Posting Tips for Best Results"):
+        st.markdown(
+            """
+1. **Post Consistently** – New ads every 2–3 days, renew expired ads.  
+2. **Use Multiple Sites** – Don’t rely on one; start with ⭐ sites first.  
+3. **Include Quality Images** – Clear, well-lit, relevant to your Medicinal Garden Kit offer.  
+4. **Write Compelling Titles** – Use benefit + keywords:  
+   - *“Medicinal Garden Kit – Grow Your Own Natural Remedies At Home”*  
+5. **Add Your Website URL** – Always include your landing page or funnel, ideally with UTM tracking.  
+6. **Track Performance** – UTM tags + your Analytics tab to see what sites actually bring leads/sales.  
+7. **Follow Site Rules** – Avoid bans; read guidelines.  
+8. **Optimize for Local** – Use city/region + “natural health”, “herbal remedies”, etc.  
+9. **Test Ad Copy** – Use your Classified Ad Writer + A/B Split Tester to find winners.  
+10. **Respond Quickly** – Same day replies build trust and conversions.  
+            """
+        )
+
+    with st.expander("🎯 Top 10 Priority Sites for Medicinal Herbal Garden Kit", expanded=False):
+        st.markdown(
+            """
+Start with these 10 platforms before you expand to all 100+:
+
+1. **Craigslist** – Local & health-conscious shoppers.  
+2. **Facebook Marketplace** – Massive reach, easy discovery.  
+3. **OfferUp** – App-driven local buyers.  
+4. **Nextdoor** – Community trust + neighborhood context.  
+5. **Oodle** – General + health categories.  
+6. **VarageSale** – Community-based group selling.  
+7. **Gumtree** – UK/AU, perfect for international testing.  
+8. **OLX** – Huge global audience for scale.  
+9. **Locanto** – Easy posting, worldwide.  
+10. **ClassifiedAds.com** – Simple interface, solid traffic.  
+            """
+        )
+
 
 def page_ab_split_tester():
     render_header()
@@ -1394,6 +1779,7 @@ def page_ab_split_tester():
         st.markdown(f"#### {name_b}")
         st.write(f"CTR: {ctr_b:.2f}% | Click→Conv: {cvr_b:.2f}% | Imp→Conv: {cr_b:.2f}% | EPC: ${epc_b:.2f} | ROI: {roi_b:.2f}%")
 
+
 def page_analytics():
     render_header()
     st.subheader("📈 Analytics & Campaign Tracker")
@@ -1435,6 +1821,7 @@ def page_analytics():
     else:
         st.info("No campaign snapshots yet.")
 
+
 def page_system_checklist():
     render_header()
     st.subheader("✅ System Checklist")
@@ -1457,6 +1844,7 @@ def page_system_checklist():
     with col4:
         st.checkbox("Classified ads ready")
         st.checkbox("Solo ad swipe ready")
+
 
 def page_copy_analyzer():
     render_header()
@@ -1502,6 +1890,7 @@ def page_copy_analyzer():
                 st.metric("Overall", f"{b['total_score']} / 100")
                 st.write(f"Len: {b['length_score']:.1f} | Emo: {b['emotion_score']:.1f} | Struct: {b['structure_score']:.1f} | CTA: {b['cta_score']:.1f} | Spec: {b['specificity_score']:.1f}")
 
+
 def page_settings_integrations():
     render_header()
     st.subheader("⚙️ Settings & Integrations")
@@ -1510,6 +1899,8 @@ def page_settings_integrations():
 
     st.markdown("### 🤖 API Keys (add in Settings → Secrets)")
     st.code(
+        'ADMIN_USERNAME = "DeAndre Jefferson"\n'
+        'ADMIN_PASSWORD = "your-strong-password"\n'
         'OPENAI_API_KEY = "sk-..."\n'
         'ANTHROPIC_API_KEY = "sk-ant-..."\n'
         'GROQ_API_KEY = "gsk_..."\n'
@@ -1525,35 +1916,22 @@ def page_settings_integrations():
         ok, msg = send_zapier_webhook(zap_url, test_payload)
         st.success(msg) if ok else st.error(msg)
 
+
 # =========================
 # Main (auth-gated)
 # =========================
 
 def main():
     if not is_authenticated():
-        # Login-only view; no nav. Keep the sidebar video & brand.
+        # Login-only view; sidebar: logo + mindset video
         with st.sidebar:
             st.markdown('<div class="sidebar-logo">🔺 Illuminati AI</div>', unsafe_allow_html=True)
             st.markdown("---")
             st.markdown("##### 🎧 Mindset Fuel")
-            st.markdown(
-                """
-                <div class="inspire-video-container">
-                    <iframe
-                        class="inspire-video-frame"
-                        width="220"
-                        height="124"
-                        src="https://www.youtube.com/embed/IN2H8U9Zr3k?autoplay=1&mute=1&loop=1&playlist=IN2H8U9Zr3k"
-                        title="The Strangest Secret by Earl Nightingale"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen
-                    ></iframe>
-                    <p class="inspire-caption">🎧 <strong>Earl Nightingale</strong><br/>“We become what we think about.”</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            # Reliable video playback: st.video with YouTube URL.
+            # If you get a Wistia share URL later, you can just replace this string.
+            st.video("https://www.youtube.com/watch?v=IN2H8U9Zr3k")
+            st.caption("🎧 Earl Nightingale – \"The Strangest Secret\"")
         login_page()
         return
 
@@ -1570,6 +1948,7 @@ def main():
                 "Classified Ad Writer",
                 "Manual & Lead Magnet",
                 "Traffic & Networks",
+                "Classified Sites",
                 "A/B Split Tester",
                 "Analytics",
                 "System Checklist",
@@ -1578,29 +1957,13 @@ def main():
             ],
         )
         st.markdown("---")
-        st.markdown("##### 🎧 Follow The Light")
-        st.markdown(
-            """
-            <div class="inspire-video-container">
-                <iframe
-                    class="inspire-video-frame"
-                    width="220"
-                    height="124"
-                    src="https://www.youtube.com/embed/IN2H8U9Zr3k?autoplay=1&mute=1&loop=1&playlist=IN2H8U9Zr3k"
-                    title="The Strangest Secret by Earl Nightingale"
-                    frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen
-                ></iframe>
-                <p class="inspire-caption">🎧 <strong>Earl Nightingale</strong><br/>“We become what we think about.”</p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        st.markdown("##### 🎧 Mindset Fuel")
+        st.video("https://www.youtube.com/watch?v=IN2H8U9Zr3k")
+        st.caption("🎧 Earl Nightingale – \"The Strangest Secret\"")
         if st.button("🚪 Logout"):
             st.session_state["auth_ok"] = False
             st.success("Logged out.")
-            st.experimental_rerun()
+            st.rerun()
 
     if page == "Dashboard":
         page_dashboard()
@@ -1616,6 +1979,8 @@ def main():
         page_manual_assets()
     elif page == "Traffic & Networks":
         page_traffic_networks()
+    elif page == "Classified Sites":
+        page_classified_sites()
     elif page == "A/B Split Tester":
         page_ab_split_tester()
     elif page == "Analytics":
@@ -1637,6 +2002,7 @@ def main():
         """,
         unsafe_allow_html=True,
     )
+
 
 if __name__ == "__main__":
     main()
